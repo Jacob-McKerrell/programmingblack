@@ -1,1 +1,1 @@
-[{"bookingID":1,"carID":"C1"}]
+[{"bookingid":"booking0","carid":"car0","customerid":"customer0"},{"bookingid":"booking1","customerid":"customer40","carid":"car9"},{"bookingid":"booking2","customerid":"customer41","carid":"car9"},{"bookingid":"booking3","customerid":"customer42","carid":"car9"}]

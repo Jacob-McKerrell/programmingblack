@@ -27,7 +27,7 @@ button.addEventListener('click', async function(event)
     // produces a URL with the necessary queries to be sent to 
     // the server script get request at /cars/
     const attributes = document.querySelectorAll(".car-attribute")
-    const url = new URL("http://127.0.0.1:3000/cars/");
+    const url = new URL("http://127.0.0.1:3000/api/cars/");
     for (let i =0; i < attributes.length; i++)
     {
       param = attributes[i]
@@ -36,7 +36,7 @@ button.addEventListener('click', async function(event)
           url.searchParams.append(param.name, param.value);
         }     
     }
-    // Calls Get request at http://127.0.0.1:3000/cars/ with the relevant
+    // Calls Get request at http://127.0.0.1:3000/api/cars/ with the relevant
     // parameters also included
     try
     {
@@ -53,11 +53,15 @@ button.addEventListener('click', async function(event)
 
         booking_button.addEventListener('click', async function(event)
         {
-          const url = new URL("http://127.0.0.1:3000/cars/");
-          url.searchParams.append("id", booking_button.id);
-          response = await fetch(url.href);
-          car = await response.json();
-          console.log(car[0])
+          const car_url = "http://127.0.0.1:3000/api/cars/" + booking_button.id
+          console.log(car_url)
+          response = await fetch(car_url);
+          const cars = await response.json();
+          
+          await create_customer_details(car)
+          console.log("HERE")
+
+          
         }
         )
       }    
@@ -69,10 +73,87 @@ button.addEventListener('click', async function(event)
   }
 );
 
+create_customer_details = async function(car)
+{
+  carlistdiv = document.getElementById('carlist')
+  carlistdiv.innerHTML = ""
+  customerdetailsdiv = document.getElementById("customerdetails")
+  createElement("H1", customerdetailsdiv, undefined, "Please enter Name and Email Address")
+  
+  // Create a form dynamically
+  var form = createElement("form", customerdetailsdiv, "customer_form");
+  form.setAttribute("method", "post");
+  form.setAttribute("action", "submit.php");
+
+  // Create an input element for emailID
+  var ID = createElement("input", form);
+  ID.setAttribute("type", "text");
+  ID.setAttribute("name", "name");
+  ID.setAttribute("placeholder", "Name");
+
+  // Create an input element for password
+  var PWD = createElement("input", form);
+  PWD.setAttribute("type", "text");
+  PWD.setAttribute("name", "emailID");
+  PWD.setAttribute("placeholder", "Email@example.com");
+
+  // Create a submit button
+  var s = createElement("input", form);
+  s.setAttribute("type", "submit");
+  s.setAttribute("value", "Submit");
+
+  console.log("PAGE UPDATED")
+  const custform = document.getElementById("customer_form");
+  custform.addEventListener('submit', async function(event)
+    {
+      console.log("BUTTON PRESSEDDD")
+      event.preventDefault();
+      const formData = new FormData(custform);
+      const formJSON = JSON.stringify(Object.fromEntries(formData.entries()));
+      console.log("Form data", formJSON);
+      const response = await fetch('http://127.0.0.1:3000/api/customers',
+          {
+              method: 'POST',
+              headers: 
+                {
+                  "Content-Type": "application/json"
+                },
+              body: formJSON
+          }
+        );
+      let body = (await response.json());
+      latest_item = body[body.length-1]
+
+      var customer = latest_item
+      book_car(car, customer)
+    })
+}
 
 
 
-function createElement(name, container, IDName, innerText, associated_object) {
+
+
+
+
+
+book_car = async function(car, customer)
+{
+  console.log(car)
+  JSONform = JSON.stringify({"customerid": customer.id, "carid": car.id})
+  const response = await fetch('http://127.0.0.1:3000/api/bookings',
+    {
+        method: 'POST',
+        headers: {
+            "Content-Type": "application/json"
+          },
+        body: JSONform
+    });
+let body = await response.text();
+document.getElementById('content').innerHTML="ADDED", body;
+
+}
+
+function createElement(name, container, IDName, innerText) {
   var element = document.createElement(name);
   if(IDName) {
       element.id = IDName;
