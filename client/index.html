@@ -13,12 +13,31 @@
     <h1> SUPER SWAGGER TITLE</h1>
     <div id="content"></div>
     <button id="get">Get instruments</button>
+    <form id='my_form' method="post">
+      Make  <input name="make" type='text'>
+      Model <input name="model" type='text'>
+      Capacity <input name="capacity">
+      <input type="submit">Submit</input>
+   </form>
+
+
+
+  <form id="search-cars" method="get">
+    Make <input name="make" type="text" class="car-attribute">
+    Model<input name="model" type="text" class="car-attribute">
+    Capacity <input name="capacity" type="text", class="car-attribute">
+  </form>
+
+   <button type="click" id="my_button">SEARCHH</button>
+   <div class="carlist" id="carlist">
+    <p>HERE GOES THE LIST OF CARS</p>
+
+  </div>
 
 
 
 
 
 
-
-    <script src="script.js"></script>#
+    <script src="formsubmit.js"></script>#
 </body>
