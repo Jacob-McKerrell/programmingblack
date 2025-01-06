@@ -1,10 +1,12 @@
+
+//This Function is responsible for adding new cars
 const form = document.getElementById('my_form');
 form.addEventListener('submit', async function(event){
     event.preventDefault();
     const formData = new FormData(form);
     const formJSON = JSON.stringify(Object.fromEntries(formData.entries()));
     console.log("Form data", formJSON);
-    const response = await fetch('http://127.0.0.1:3000/api/car/add',
+    const response = await fetch('http://127.0.0.1:3000/api/cars',
         {
             method: 'POST',
             headers: {
@@ -16,49 +18,84 @@ form.addEventListener('submit', async function(event){
     document.getElementById('content').innerHTML="ADDED";
 })
 
+
+//This function is responsible for filtering and displaying cars
 const button = document.getElementById("my_button")
-const attributes = document.querySelectorAll(".car-attribute")
-button.addEventListener('click', async function(event){
-    const Url = new URL("http://127.0.0.1:3000/cars/find/");
+button.addEventListener('click', async function(event)
+{
+    // Obtains Attributes specified in the html form element and
+    // produces a URL with the necessary queries to be sent to 
+    // the server script get request at /cars/
+    const attributes = document.querySelectorAll(".car-attribute")
+    const url = new URL("http://127.0.0.1:3000/cars/");
     for (let i =0; i < attributes.length; i++)
     {
-        param = attributes[i]
-        console.log(param)
-        
-          if (param.value != "")
-          {
-             console.log("ADDING")
-             console.log(param.value)
-             console.log(param.name)
-              Url.searchParams.append(param.name, param.value);
-
-          }
-        
+      param = attributes[i]
+        if (param.value != "")
+        {
+          url.searchParams.append(param.name, param.value);
+        }     
     }
-   
-
-    console.log(Url.href)
-
-
-
-
-    try{
-      let response = await fetch(Url.href);
-      
+    // Calls Get request at http://127.0.0.1:3000/cars/ with the relevant
+    // parameters also included
+    try
+    {
+      let response = await fetch(url.href);
       let carlist = await response.json();
-      document.getElementById('carlist').innerHTML = ''
-      for (i in carlist){
+      carlistdiv = document.getElementById('carlist')
+      carlistdiv.innerHTML = ''
+      for (i in carlist)
+      {
         car = carlist[i]
-        document.getElementById('carlist').innerHTML += `<h1>${car.make.toUpperCase()} ${car.model.toUpperCase()}</h1>`
-        document.getElementById('carlist').innerHTML += `<p>Capacity: ${car.capacity}</p>`
-      }
-       
+        createElement("H1",  carlistdiv, undefined, car.make + " " + car.model.toUpperCase());
+        createElement("P",  carlistdiv, undefined, "Capacity: " + car.capacity + " Persons");
+        const booking_button = createElement("BUTTON", carlistdiv, car.id, "Book This Car")
+
+        booking_button.addEventListener('click', async function(event)
+        {
+          const url = new URL("http://127.0.0.1:3000/cars/");
+          url.searchParams.append("id", booking_button.id);
+          response = await fetch(url.href);
+          car = await response.json();
+          console.log(car[0])
+        }
+        )
+      }    
+      
+    } catch(e) 
+    {
+      alert(e); // Displays the Error if something goes wrong!
+    }     
+  }
+);
 
 
-    } catch(e) {
-      alert(e);
-    }
-  });
+
+
+function createElement(name, container, IDName, innerText, associated_object) {
+  var element = document.createElement(name);
+  if(IDName) {
+      element.id = IDName;
+  }
+  if(container) {
+      container.appendChild(element);
+  }
+  if(innerText) {
+      element.innerText = innerText;
+  }
+  return element;
+}
+
+booking_buttons = document.querySelectorAll(".booking-button")
+
+for(let button of booking_buttons){
+  let clickable_parent = img.parentElement.parentElement.parentElement
+  clickable_parent.addEventListener("click", () => {
+      img.classList.remove("invisible")
+  })
+}
+
+
 
 
 

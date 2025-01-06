@@ -20,29 +20,18 @@ app.get('/cars/list', function (req, resp){
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
 /* ADD NEW ITEM */
-let cars = require("./data/cars.json")
-app.post("/api/car/add", function(req, resp){
+app.post("/api/cars/", function(req, resp){
     //add new car
+    let cars = require("./data/cars.json")
     console.log(cars)
     last_item = cars.slice(-1)
     console.log(last_item, last_item[0]["id"])
-    let id = cars.slice(-1)[0]["id"] + 1
+    let id = "car" + parseInt(parseInt(cars.slice(-1)[0]["id"].slice(1)) + 1)
     let make = req.body.make
     let model = req.body.model
     let capacity = req.body.capacity
+    let registration = req.body.registration
     let available = true
     let newCar = {"id": id, "make": make.toLowerCase(), "model": model.toLowerCase(), "capacity": capacity, "available": available}
     console.log("NEW CAR")
@@ -54,6 +43,19 @@ app.post("/api/car/add", function(req, resp){
 
 }
 )
+
+
+
+app.post("api/bookings", function(req, resp){
+  let bookingid = bookings.slice(-1)[0]["id"] + 1
+  let customerid = req.body.customerid
+  let carid = req.body.carid
+})
+
+
+
+
+
 
 
 
@@ -81,7 +83,7 @@ const search_json = function(req, resp, next){
 
 
 
-app.get("/cars/find", function(req, resp)
+app.get("/cars", function(req, resp)
 {
   const cars = require("./data/cars.json")
   let id = req.query.id
@@ -111,17 +113,38 @@ app.get("/cars/find", function(req, resp)
   //console.log("REMOVED", removedCarIDs)
   filteredCars = filteredCars.filter( ( el ) => !removedCarIDs.includes( el.id ) );
   //console.log("FILTERED", filteredCars)
-
-  const Url = new URL("http://127.0.0.1:3000/cars/find/");
-  Url.searchParams.append("make", "Audi");
-  console.log(Url.href)
-
-
-
   resp.send(filteredCars)
 
-})
+ }
+)
 
+app.get("/cars/:id", function(req, resp)
+  { 
+    const cars = require("./data/cars.json")
+    let id = (req.params.id.toLowerCase())
+    sent = false
+    console.log(id)
+    for (i in cars)
+    {
+      var car = JSON.parse(JSON.stringify(cars[i]))
+      if (car.id == id)
+      {
+        resp.status(200).send(car)
+        sent=true
+      }
+    }
+    if (sent == false)
+    {
+      resp.status(404).send("Sorry, there doesn't exist a car with the id: " + id);
+    }
+  }
+)
+
+app.get("/bookings", function(req, resp)
+{
+  const bookings = require("./data/bookings.json")
+}
+)
 
 
 
