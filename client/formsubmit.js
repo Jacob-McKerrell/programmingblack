@@ -56,10 +56,9 @@ button.addEventListener('click', async function(event)
           const car_url = "http://127.0.0.1:3000/api/cars/" + booking_button.id
           console.log(car_url)
           response = await fetch(car_url);
-          const cars = await response.json();
-          
-          await create_customer_details(car)
-          console.log("HERE")
+          const car = await response.json();
+          console.log("HERE", car)
+          create_customer_details(car)
 
           
         }
@@ -75,10 +74,11 @@ button.addEventListener('click', async function(event)
 
 create_customer_details = async function(car)
 {
+  
   carlistdiv = document.getElementById('carlist')
   carlistdiv.innerHTML = ""
   customerdetailsdiv = document.getElementById("customerdetails")
-  createElement("H1", customerdetailsdiv, undefined, "Please enter Name and Email Address")
+  createElement("H1", customerdetailsdiv, undefined, "Please enter Name and Email Address to book " + car.make.toUpperCase() + " " + car.model.toUpperCase())
   
   // Create a form dynamically
   var form = createElement("form", customerdetailsdiv, "customer_form");
