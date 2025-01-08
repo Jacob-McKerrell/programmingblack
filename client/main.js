@@ -1,4 +1,5 @@
-async function post(entity, url){
+async function post(entity, relativeURL){
+  url = window.location.href + relativeURL.slice(1)
   const response = await fetch(url,
     {
         method: 'POST',
@@ -10,10 +11,28 @@ async function post(entity, url){
     return await response.json()
 }
 function create_new_car(car_details){
-  post(car_details, "http://127.0.0.1:3000/api/cars")
+  post(car_details, "/api/cars")
 }
 //render_car_admin(create_new_car)
 
+
+async function get(relativeURL, queries){
+  const url = new URL(relativeURL, window.location.href);
+  if (queries){
+    for (let i =0; i < queries.length; i++)
+    {
+      param = queries[i]
+      if (param.value != "")
+        {
+          url.searchParams.append(param.name, param.value);
+        }     
+    }
+  }
+    console.log(url.href)
+    let response = await fetch(url.href);
+    return response.json()
+
+}
 
 //This function is responsible for filtering and displaying cars
 const button = document.getElementById("my_button")
@@ -22,22 +41,16 @@ button.addEventListener('click', async function(event)
     // Obtains Attributes specified in the html form element and
     // produces a URL with the necessary queries to be sent to 
     // the server script get request at /cars/
-    const attributes = document.querySelectorAll(".car-attribute")
-    const url = new URL("http://127.0.0.1:3000/api/cars/");
-    for (let i =0; i < attributes.length; i++)
-    {
-      param = attributes[i]
-        if (param.value != "")
-        {
-          url.searchParams.append(param.name, param.value);
-        }     
-    }
-    // Calls Get request at http://127.0.0.1:3000/api/cars/ with the relevant
+
+
+    
+    // Calls Get request at /api/cars/ with the relevant
     // parameters also included
     try
     {
-      let response = await fetch(url.href);
-      let carlist = await response.json();
+      const queries = document.querySelectorAll(".car-attribute")
+      console.log(queries)
+      carlist = await get("/api/cars", queries)
       render_car_list(carlist)      
     } catch(e) 
     {
@@ -50,11 +63,9 @@ button.addEventListener('click', async function(event)
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 async function get_customer_details_from_email(email)
 {
-  url = new URL("http://127.0.0.1:3000/api/customers")
-  url.searchParams.append("email", email)
-  var response = await fetch(url.href)
-  const customers = await response.json()
-  console.log("CUSTOMERS", customers, url.href, customers.length)
+  queries = [{"name": "email", "value": email}]
+  const customers = await get("/api/customers", queries)
+  console.log(customers, queries)
   if (customers.length == 0)
     {
     return undefined
@@ -64,15 +75,52 @@ async function get_customer_details_from_email(email)
   }   
 }
 
-
+async function patch(relativeURL, entity, queries){
+  const url = new URL(relativeURL + "/" + entity.id, window.location.href);
+  if (queries){
+    for (let i =0; i < queries.length; i++)
+    {
+      param = queries[i]
+      if (param.value != "")
+        {
+          url.searchParams.append(param.name, param.value);
+        }     
+    }
+  }
+  const response = await fetch(url,
+    {
+        method: 'PATCH',
+        headers: {
+            "Content-Type": "application/json"
+          },
+        body: JSON.stringify(entity)
+    });
+  return response.json()
+}
 
 function create_new_customer(customer_details){
-  post(customer_details, "http://127.0.0.1:3000/api/customers")
+  return post(customer_details, "/api/customers")
+}
+
+async function make_car_unavailable(car_details){
+  car_details.available = "no"
+  const url = new URL("/api/cars/" + car_details.id, window.location.href);
+  url.searchParams.append("available", car_details.available);
+  const response = await fetch(url,
+    {
+        method: 'PATCH',
+        headers: {
+            "Content-Type": "application/json"
+          },
+        body: JSON.stringify(car_details)
+    });
+  return response.json()
 }
 
 function create_new_booking(car_details, customer_details){
   const booking_details = {"customerid": customer_details.id, "carid": car_details.id}
-  post(booking_details, 'http://127.0.0.1:3000/api/bookings')
+  make_car_unavailable(car_details)
+  return post(booking_details, '/api/bookings')
 
 }
 
@@ -99,6 +147,12 @@ for(let button of booking_buttons){
   })
 }
 
+
+function modify_car_availability(car_details){
+
+
+
+}
 
 
 
@@ -131,16 +185,18 @@ function render_car_admin(create_new_car) {
 }
 
 
-function render_car_list(carlist){
+function render_car_list(carlist, buttons=true){
   div = document.getElementById('content')
   div.innerHTML = ''
-  for (i in carlist)
+  for (let i =0; i < carlist.length; i++)
   {
     car = carlist[i]
-    console.log(car)
+    console.log("CAR IS HRER",car)
     createElement("H1",  div, undefined, car.make + " " + car.model.toUpperCase());
     createElement("P",  div, undefined, "Capacity: " + car.capacity + " Persons");
-    const button = render_car_selection_button(car, render_email_form)
+    if (buttons){
+      const button = render_car_selection_button(car, render_email_form)
+    }
   }    
 }
 
@@ -149,9 +205,7 @@ render_car_selection_button = function(instance, render_email_form){
   const button = createElement("BUTTON", div, instance.id, "Book This Car")
   button.addEventListener('click', async function(event)
         {
-          const url = "http://127.0.0.1:3000/api/cars/" + button.id
-          response = await fetch(url);
-          const car = await response.json();
+          car = await get("/api/cars/"+button.id)
           render_email_form(car) 
         })
   return button 
@@ -164,9 +218,7 @@ function render_email_form (car_details)
   createElement("H1", div, undefined, "Please enter Name and Email Address to book " + car_details.make.toUpperCase() + " " + car_details.model.toUpperCase())
 
   // Create a form dynamically
-  var form = createElement("form", div, "customer_form");
-  form.setAttribute("method", "post");
-  form.setAttribute("action", "submit.php");
+  var form = createElement("form", div, "customer_email_form");
 
   // Create an input element for Email
   var PWD = createElement("input", form);
@@ -187,13 +239,19 @@ function render_email_form (car_details)
     customer_email = Object.fromEntries(new FormData(form).entries()).email
     const customer_details = await get_customer_details_from_email(customer_email);
     if (customer_details){
-      create_new_booking(customer_email, car_details)
+      create_new_booking(car_details, customer_details)
+      render_customer_bookings(customer_details)
+
+
     }
     else{
+      console.log("rendering info")
       render_customer_info_form(customer_email, car_details)
     }
   })
 }
+
+
 
 
 function render_customer_info_form(email, car_details){
@@ -202,9 +260,7 @@ function render_customer_info_form(email, car_details){
   createElement("H1", div, undefined, "Continue Setting Up Account for " + email)
   
   // Create a form dynamically
-  var form = createElement("form", div, "customer_form");
-  form.setAttribute("method", "post");
-  form.setAttribute("action", "submit.php");
+  var form = createElement("form", div, "customer_info_form");
 
   // Create an input element for Firstname
   var ID = createElement("input", form);
@@ -225,10 +281,33 @@ function render_customer_info_form(email, car_details){
 
 
   form.addEventListener('submit', async function(event){
-    customer_details = Object.fromEntries(new FormData(custform).entries())
+    event.preventDefault()
+    console.log("INFO BUTTON PRESSED")
+    customer_details = Object.fromEntries(new FormData(form).entries())
     customer_details.email = email
-    booking_details = get_booking_details(customer_details, car_details)
-    add_new_booking(car_details, customer_details)
+    all_customers_details = await create_new_customer(customer_details)
+    customer_details = all_customers_details[all_customers_details.length-1]
+    console.log(customer_details)
+    create_new_booking(car_details, customer_details)
+    modify_car_availability(car_details)
+    render_customer_bookings(customer_details)
+
 
   })
+}
+
+
+async function render_customer_bookings(customer_details){
+  console.log("HERE MATEY")
+  let queries = [{"name": "customerid", "value": customer_details.id}]
+  let bookings = await get("/api/bookings", queries)
+  carlist = []
+  for (i in bookings){
+    booking_details = bookings[i]
+    let queries = [{"name": "id", "value": booking_details.carid}]
+    car_details = await get("/api/cars", queries)
+    carlist.push(car_details[0])
+  }
+  console.log(carlist, carlist.length)
+  render_car_list(carlist, buttons=false)
 }
