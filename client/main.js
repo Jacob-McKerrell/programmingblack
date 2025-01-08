@@ -187,9 +187,44 @@ function render_car_admin(create_new_car) {
   })
 }
 
+function render_customer_login(){
+  // Create a form dynamically
+  div = document.getElementById("content")
+  var form = createElement("form", div, "customer_email_form");
+
+  createElement("H3", form, "", "Enter Email to view your Bookings")
+  // Create an input element for Email
+  var PWD = createElement("input", form);
+  PWD.setAttribute("type", "text");
+  PWD.setAttribute("name", "email");
+  PWD.setAttribute("placeholder", "Email@example.com");
+
+  // Create a submit button
+  var s = createElement("input", form);
+  s.setAttribute("type", "submit");
+  s.setAttribute("value", "Submit");
 
 
-async function render_car_filter(){
+  form.addEventListener('submit', async function(event)
+  {
+    event.preventDefault();
+    customer_email = Object.fromEntries(new FormData(form).entries()).email
+    const customer_details = await get_customer_details_from_email(customer_email);
+    if (customer_details){
+      render_customer_bookings(customer_details)
+    }
+    else{
+      
+      render_customer_info_form(customer_email, car_details)
+    }
+  })
+}
+
+
+
+
+
+function render_car_filter(){
  // <form id="search-cars" method="get" class="form-group">
    // <h3>Make</h1><input name="make" type="text" class="car-attribute form-control">
    // Model<input name="model" type="text" class="car-attribute form-control">
@@ -344,9 +379,14 @@ function render_customer_info_form(email, car_details){
     all_customers_details = await create_new_customer(customer_details)
     customer_details = all_customers_details[all_customers_details.length-1]
     console.log(customer_details)
-    create_new_booking(car_details, customer_details)
-    modify_car_availability(car_details)
-    render_customer_bookings(customer_details)
+    if (car_details){
+        create_new_booking(car_details, customer_details)
+        modify_car_availability(car_details)
+        render_customer_bookings(customer_details)
+    }
+    else{
+      console.log("customer Added")
+    }
 
 
   })
@@ -369,5 +409,5 @@ async function render_customer_bookings(customer_details){
 }
 
 
-
+render_customer_login()
 render_car_filter()
