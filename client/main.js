@@ -1,4 +1,5 @@
-const post = async function(entity, url){
+
+async function post(entity, url){
   const response = await fetch(url,
     {
         method: 'POST',
@@ -9,20 +10,10 @@ const post = async function(entity, url){
     });
     return await response.json()
 }
-
-
-
-
-
-
-//This Function is responsible for adding new cars when button is pressed
-const form = document.getElementById('my_form');
-form.addEventListener('submit', async function(event){
-    event.preventDefault();
-    const car_details = Object.fromEntries(new FormData(form).entries());
-    post(car_details, "http://127.0.0.1:3000/api/cars")
-})
-
+function create_new_car(car_details){
+  post(car_details, "http://127.0.0.1:3000/api/cars")
+}
+render_car_admin(create_new_car)
 
 //This function is responsible for filtering and displaying cars
 const button = document.getElementById("my_button")
@@ -233,3 +224,31 @@ button.addEventListener("search", async function(event){
     document.getElementById("carlist").innerHTML=body
 })
 const boxElem = document.querySelector(".carlist");*/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function render_car_admin(create_new_car) {
+  console.log("RENDERING CAR ADMIIN")
+  //This Function is responsible for adding new cars when button is pressed
+  const form = document.getElementById('my_form');
+  form.addEventListener('submit', async function(event){
+    event.preventDefault();
+    create_new_car(Object.fromEntries(new FormData(form).entries()));   
+  })
+}
