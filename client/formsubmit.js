@@ -1,14 +1,13 @@
-const post = async function(formJSON, url){
+const post = async function(entity, url){
   const response = await fetch(url,
     {
         method: 'POST',
         headers: {
             "Content-Type": "application/json"
           },
-        body: formJSON
+        body: JSON.stringify(entity)
     });
-    let body = await response.text()
-    return body
+    return await response.json()
 }
 
 
@@ -20,11 +19,8 @@ const post = async function(formJSON, url){
 const form = document.getElementById('my_form');
 form.addEventListener('submit', async function(event){
     event.preventDefault();
-    const formData = new FormData(form);
-    const formJSON = JSON.stringify(Object.fromEntries(formData.entries()));
-    console.log("Form data", formJSON);
-    let body = post(formJSON, "http://127.0.0.1:3000/api/cars")
-    document.getElementById('content').innerHTML="ADDED";
+    const car_details = Object.fromEntries(new FormData(form).entries());
+    post(car_details, "http://127.0.0.1:3000/api/cars")
 })
 
 
@@ -185,25 +181,19 @@ create_customer = async function(cust_emailID)
   {
     display_name_form()
     const custform = document.getElementById("customer_form");
-    custform.addEventListener('submit', async function(event)
-      {
-      event.preventDefault();
-      const formData = new FormData(custform);
-      const formJSON = (Object.fromEntries(formData.entries()));
-      formJSON.email = cust_emailID
-      console.log("Form data", formJSON);
-      JSONform = JSON.stringify(formJSON)
-      post(JSONform, "http://127.0.0.1:3000/api/customers")
+    custform.addEventListener('submit', async function(event) {
+        event.preventDefault();
+        const customer_details = Object.fromEntries(new FormData(custform).entries());
+        customer_details.email = cust_emailID
+        post(customer_details, "http://127.0.0.1:3000/api/customers")
       }
     )
     } 
 
 book_car = async function(car, customer)
 {
-  console.log(car)
-  JSONform = JSON.stringify({"customerid": customer.id, "carid": car.id})
-  let body = post(JSONform, 'http://127.0.0.1:3000/api/bookings')
-  document.getElementById('content').innerHTML="ADDED", body;
+  const booking_details = {"customerid": customer.id, "carid": car.id}
+  post(booking_details, 'http://127.0.0.1:3000/api/bookings')
 
 }
 
