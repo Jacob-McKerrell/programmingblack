@@ -1,5 +1,6 @@
 const express = require('express')
 const fs = require('fs');
+const {v4: uuidv4} =require("uuid")
 
 const app = express()
 const hostname = '127.0.0.1';
@@ -23,18 +24,34 @@ app.get('/cars/list', function (req, resp){
 /* ADD NEW CAR */
 
 
-get_next_id = function(entities, entity_name, id_name="id")
-{
-  console.log(entities.slice(-1))
-  last_item = entities.slice(-1)
-  let id = entity_name + parseInt(parseInt(entities.slice(-1)[0][id_name].slice(entity_name.length)) + 1)
-  return id
-}
+app.patch("/api/cars/:id/", function(req, resp){
+  req.query.id = req.params.id
+  let ignore_list = []
+  for (param in req.query){
+    if (param != "id"){
+      ignore_list.push(param)
+    }
+  }
+  let allcars = require("./data/cars.json")
+  filteredCars = filter_entity_list(req, allcars, ignore=ignore_list)
+  let car = filteredCars[0]
+  for (param in req.query){
+    if (param != "id"){
+      car[param] = req.query[param]
+    }
+  }
+  if (allcars.includes(car) == false){resp.status(404).send("Sorry, there doesn't exist a car with the id: " + req.query.id);}
+  let carsText = JSON.stringify(allcars)
+  fs.writeFileSync('./data/cars.json', carsText)
+  resp.status(200).send(carsText)
+})
+
+
 
 app.post("/api/cars/", function(req, resp){
     //add new car
     let cars = require("./data/cars.json")
-    let id = get_next_id(cars, "car")
+    let id = uuidv4()
     let make = req.body.make.toLowerCase()
     let model = req.body.model.toLowerCase()
     let capacity = req.body.capacity
@@ -54,7 +71,7 @@ app.post("/api/customers", function(req, resp)
   //add new customer
   console.log("ADDDING NOEW CUSGOMERRR")
   let customers = require("./data/customers.json")
-  let id = get_next_id(customers, "customer")
+  let id = uuidv4()
   let firstname = req.body.firstname
   let surname = req.body.surname
   let email = req.body.email
@@ -68,10 +85,11 @@ app.post("/api/customers", function(req, resp)
 
 app.post("/api/bookings", function(req, resp){
   let bookings = require("./data/bookings.json")
-  let bookingid = get_next_id(bookings, "booking", "bookingid")
+  let bookingid = uuidv4()
   let customerid = req.body.customerid
   let carid = req.body.carid
-  let newBooking = {"bookingid": bookingid, "customerid": customerid, "carid": carid} 
+  let newBooking = {"id": bookingid, "customerid": customerid, "carid": carid} 
+  console.log("NEW BOOKING AT:", newBooking)
   bookings.push(newBooking)
   let bookingText = JSON.stringify(bookings)
   fs.writeFileSync("./data/bookings.json", bookingText)
@@ -83,18 +101,20 @@ app.post("/api/bookings", function(req, resp){
 
 
 
-filter_entity_list = function(req, entity_list){
+filter_entity_list = function(req, entity_list, ignore=[]){
   filteredlist = entity_list
   removeditemIDs = []
   for (let i in entity_list)
-    {    
+    {  
       var entity = JSON.parse(JSON.stringify(entity_list[i]))
       for (param in req.query)
       {
-       //console.log(car[`${param}`], req.query[param])
+        console.log(param)  
         if (entity[`${param}`] != req.query[param])
         {
-          removeditemIDs.push(entity.id)
+          if (ignore.includes(param) == false){
+            removeditemIDs.push(entity.id)
+          }
         }
         filteredlist = filteredlist.filter( ( el ) => !removeditemIDs.includes( el.id ) );
       } 
@@ -114,7 +134,7 @@ app.get("/api/cars/:id", function(req, resp)
     const cars = require("./data/cars.json")
     let id = (req.params.id.toLowerCase())
     sent = false
-    console.log(id)
+    //console.log(id)
     for (i in cars)
     {
       var car = JSON.parse(JSON.stringify(cars[i]))
@@ -133,10 +153,10 @@ app.get("/api/cars/:id", function(req, resp)
 
 app.get("/api/bookings", function(req, resp)
 {
-  console.log("CALLED POST ON BOOKINGS")
+  console.log("CALLED GET ON BOOKINGS")
   const bookings = require("./data/bookings.json")
-  filteredCars = filter_entity_list(req, bookings)
-  resp.send(filteredCars)
+  filteredCars = filter_entity_list(req, bookings, ignore=[], id_name="bookingid")
+  resp.status(200).send(filteredCars)
 }
 )
 
@@ -149,14 +169,14 @@ app.get("/api/customers/", function (req, resp)
 
 app.get("/api/customers/:id", function(req, resp)
   { 
-    const cars = require("./data/customers.json")
-    let id = (req.params.id.toLowerCase())
+    const customers = require("./data/customers.json")
+    let id = (req.params.id)
     sent = false
     console.log(id)
     for (i in customers)
     {
-      var car = JSON.parse(JSON.stringify(customers[i]))
-      if (car.id == id)
+      var customer = JSON.parse(JSON.stringify(customers[i]))
+      if (customer.id == id)
       {
         resp.status(200).send(customer)
         sent=true

@@ -35,29 +35,7 @@ async function get(relativeURL, queries){
 }
 
 //This function is responsible for filtering and displaying cars
-const button = document.getElementById("my_button")
-button.addEventListener('click', async function(event)
-{
-    // Obtains Attributes specified in the html form element and
-    // produces a URL with the necessary queries to be sent to 
-    // the server script get request at /cars/
 
-
-    
-    // Calls Get request at /api/cars/ with the relevant
-    // parameters also included
-    try
-    {
-      const queries = document.querySelectorAll(".car-attribute")
-      console.log(queries)
-      carlist = await get("/api/cars", queries)
-      render_car_list(carlist)      
-    } catch(e) 
-    {
-      alert(e); // Displays the Error if something goes wrong!
-    }     
-  }
-);
 
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -98,12 +76,12 @@ async function patch(relativeURL, entity, queries){
   return response.json()
 }
 
-function create_new_customer(customer_details){
+function create_new_customer(customer_details, status){
   return post(customer_details, "/api/customers")
 }
 
-async function make_car_unavailable(car_details){
-  car_details.available = "no"
+async function change_car_availability_status(car_details){
+  car_details.available = status
   const url = new URL("/api/cars/" + car_details.id, window.location.href);
   url.searchParams.append("available", car_details.available);
   const response = await fetch(url,
@@ -119,24 +97,12 @@ async function make_car_unavailable(car_details){
 
 function create_new_booking(car_details, customer_details){
   const booking_details = {"customerid": customer_details.id, "carid": car_details.id}
-  make_car_unavailable(car_details)
+  change_car_availability_status(car_details, "no")
   return post(booking_details, '/api/bookings')
 
 }
 
-function createElement(name, container, IDName, innerText) {
-  var element = document.createElement(name);
-  if(IDName) {
-      element.id = IDName;
-  }
-  if(container) {
-      container.appendChild(element);
-  }
-  if(innerText) {
-      element.innerText = innerText;
-  }
-  return element;
-}
+
 
 booking_buttons = document.querySelectorAll(".booking-button")
 
@@ -167,12 +133,37 @@ button.addEventListener("search", async function(event){
 })
 const boxElem = document.querySelector(".carlist");*/
 
-
+function get_list_of_values(entities, attribute){
+  let values = []
+  for (i in entities){
+    entity = entities[i]
+    if (values.includes(entity[attribute]) == false){
+      values.push(entity[attribute])
+    }
+  }
+  values = values.sort()
+  return values
+  
+}
 
 
 
 
 /// RENDERING FUNCTIONS///
+function createElement(name, container, IDName, innerText) {
+  var element = document.createElement(name);
+  if(IDName) {
+      element.id = IDName;
+  }
+  if(container) {
+      container.appendChild(element);
+  }
+  if(innerText) {
+      element.innerText = innerText;
+  }
+  return element;
+}
+
 
 function render_car_admin(create_new_car) {
   console.log("RENDERING CAR ADMIIN")
@@ -182,7 +173,125 @@ function render_car_admin(create_new_car) {
     event.preventDefault();
     create_new_car(Object.fromEntries(new FormData(form).entries()));   
   })
+
+  const button = document.getElementById("reset_availabilty")
+  button.addEventListener('submit', async function(event){
+    event.preventDefault();
+    console.log("DO THIS FAMMMM")
+    allcars = get("/api/cars", queries=[])
+    for (i in cars){
+      car_details = cars[i]
+      console.log("DO THIS FAMMMM")
+      change_car_availability_status(car_details, "yes");   
+    }
+  })
 }
+
+
+
+async function render_car_filter(){
+ // <form id="search-cars" method="get" class="form-group">
+   // <h3>Make</h1><input name="make" type="text" class="car-attribute form-control">
+   // Model<input name="model" type="text" class="car-attribute form-control">
+    //Capacity <input name="capacity" type="text", class="car-attribute form-control">
+    //<input name="available" value="yes", class="car-attribute invisibleinfo form-control">
+ // </form>
+ 
+  queries = [{"name":"available", "value": "yes"}]
+  allcars = await get("/api/cars", queries)
+  allmakes = get_list_of_values(allcars, "make")
+  console.log(allmakes)
+  div = document.getElementById("content")
+  var form = createElement("FORM", div, "search-cars")
+
+  var available = createElement("INPUT", form)
+  available.setAttribute("type", "text")
+  available.setAttribute("name", "available")
+  available.setAttribute("value", "yes")
+  available.setAttribute("class", "invisible")
+
+
+
+  var ID = createElement("input", form);
+  ID.setAttribute("type", "text");
+  ID.setAttribute("name", "surname");
+  ID.setAttribute("placeholder", "surname");
+
+  var select = createElement("SELECT", form, "make", "TESTINGG");
+  select.setAttribute("class", "car-attribute")
+  select.setAttribute("name", "make")
+  for (i in allmakes){
+    const make = allmakes[i];
+    console
+    let option = createElement("OPTION", select, undefined, make.toUpperCase())
+    option.setAttribute("value", make)
+  }
+
+
+
+  /*
+  queries = [{"name":"available", "value": "yes"}]
+  allcars = await get("/api/cars", queries)
+  allmakes = get_list_of_values(allcars, "make")
+  console.log(allmakes)
+  div = document.getElementById("content")
+  var form = createElement("FORM", div, "search-cars")
+  var select = createElement("SELECT", form, "make", );
+  for (i in allmakes){
+    const make = allmakes[i];
+    console
+    let option = createElement("OPTION", select, undefined, make.toUpperCase())
+    option.setAttribute("value", make)
+    option.setAttribute("class", "search-cars-button")
+  }*/
+  
+
+  
+
+
+
+  
+  // Create an input element for Surname
+  var ID = createElement("input", form);
+  ID.setAttribute("type", "text");
+  ID.setAttribute("name", "surname");
+  ID.setAttribute("placeholder", "surname");
+
+  // Create a submit button
+  var s = createElement("input", form, "search-cars-button", "Search"); 
+  s.setAttribute("type", "submit");
+  s.setAttribute("value", "Submit");
+
+  const button = document.getElementById("search-cars-button")
+  button.addEventListener('click', async function(event)
+  {
+    // Obtains Attributes specified in the html form element and
+    // produces a URL with the necessary queries to be sent to 
+    // the server script get request at /cars/
+
+
+    
+    // Calls Get request at /api/cars/ with the relevant
+    // parameters also included
+    try
+    {
+      const queries = document.querySelectorAll(".car-attribute")
+      console.log(queries.value)
+      carlist = await get("/api/cars", queries)
+      console.log(carlist)
+      render_car_list(carlist)      
+      console.log("TAHTS ALL")
+    } catch(e) 
+    {
+      alert(e); // Displays the Error if something goes wrong!
+    }     
+  }
+  );
+}
+
+
+
+
 
 
 function render_car_list(carlist, buttons=true){
@@ -195,7 +304,7 @@ function render_car_list(carlist, buttons=true){
     createElement("H1",  div, undefined, car.make + " " + car.model.toUpperCase());
     createElement("P",  div, undefined, "Capacity: " + car.capacity + " Persons");
     if (buttons){
-      const button = render_car_selection_button(car, render_email_form)
+      const button = render_car_selection_button(car, render_email_form,)
     }
   }    
 }
@@ -311,3 +420,7 @@ async function render_customer_bookings(customer_details){
   console.log(carlist, carlist.length)
   render_car_list(carlist, buttons=false)
 }
+
+
+
+render_car_filter()

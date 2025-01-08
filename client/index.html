@@ -4,7 +4,6 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width" />
     <title>Document title</title>
-    <link rel="stylesheet" href="style.css">
   </head>
 
 
@@ -23,17 +22,17 @@
 
 -->
   <h2>FORM TO FILTER SEARCH OF CARS</h2>
-  <form id="search-cars" method="get">
-    Make <input name="make" type="text" class="car-attribute">
-    Model<input name="model" type="text" class="car-attribute">
-    Capacity <input name="capacity" type="text", class="car-attribute">
-    <input display="none" name="available" value="yes", class="car-attribute invisibleinfo">
+  <form id="search-cars" method="get" class="form-group">
+    <h3>Make</h1><input name="make" type="text" class="form-control">
+    Model<input name="model" type="text" class="form-control">
+    Capacity <input name="capacity" type="text", class="form-control">
+    <input name="available" value="yes", class="invisibleinfo form-control">
   </form>
 
 
   <h2>FORM TO ADD A BOOKING BASED ON IDs</h2>
 
-   <button type="click" id="my_button">SEARCHH</button>
+   <button type="click" id="search-cars-button" class="btn btn-primary">SEARCHH</button>
 
    <div class="invisibleinfo" id="invisibleinfo"></div>
 
