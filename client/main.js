@@ -196,85 +196,33 @@ async function render_car_filter(){
     //Capacity <input name="capacity" type="text", class="car-attribute form-control">
     //<input name="available" value="yes", class="car-attribute invisibleinfo form-control">
  // </form>
- /*
-  queries = [{"name":"available", "value": "yes"}]
-  allcars = await get("/api/cars", queries)
-  allmakes = get_list_of_values(allcars, "make")
-  console.log(allmakes)
+ 
   div = document.getElementById("content")
-  var form = createElement("FORM", div, "search-cars")
+  var form = createElement("FORM", div)
 
-  var available = createElement("INPUT", form)
-  available.setAttribute("type", "text")
-  available.setAttribute("name", "available")
-  available.setAttribute("value", "yes")
-  available.setAttribute("class", "invisible")
+  createElement("H3", form,"", "Model")
+  var ID = createElement("INPUT", form, undefined)
+  ID.setAttribute("name", "model")
+  ID.setAttribute("type", "text")
+  ID.setAttribute("class", "car-attribute form-control")
 
-
-
-  var ID = createElement("input", form);
-  ID.setAttribute("type", "text");
-  ID.setAttribute("name", "surname");
-  ID.setAttribute("placeholder", "surname");
-
-  var select = createElement("SELECT", form, "make", "TESTINGG");
-  select.setAttribute("class", "car-attribute")
-  select.setAttribute("name", "make")
-  for (i in allmakes){
-    const make = allmakes[i];
-    console
-    let option = createElement("OPTION", select, undefined, make.toUpperCase())
-    option.setAttribute("value", make)
-  }
-
-
+  createElement("H3", form,"", "Capacity")
+  var ID = createElement("INPUT", form, undefined, "Capacity")
+  ID.setAttribute("name", "capacity")
+  ID.setAttribute("type", "text")
+  ID.setAttribute("class", "car-attribute form-control")
 
   
-  queries = [{"name":"available", "value": "yes"}]
-  allcars = await get("/api/cars", queries)
-  allmakes = get_list_of_values(allcars, "make")
-  console.log(allmakes)
-  div = document.getElementById("content")
-  var form = createElement("FORM", div, "search-cars")
-  var select = createElement("SELECT", form, "make", );
-  for (i in allmakes){
-    const make = allmakes[i];
-    console
-    let option = createElement("OPTION", select, undefined, make.toUpperCase())
-    option.setAttribute("value", make)
-    option.setAttribute("class", "search-cars-button")
-  }
-  
-
-  
+  var button = createElement("INPUT", form, "clickme")
+  button.setAttribute("type", "submit");
+  button.setAttribute("value", "Submit");
 
 
-
-  
-  // Create an input element for Surname
-  var ID = createElement("input", form);
-  ID.setAttribute("type", "text");
-  ID.setAttribute("name", "surname");
-  ID.setAttribute("placeholder", "surname");
-
-  // Create a submit button
-  var s = createElement("input", form, "search-cars-button", "Search"); 
-  s.setAttribute("type", "submit");
-  s.setAttribute("value", "Submit");
-  */
-  const button = document.getElementById("search-cars-button")
-  button.addEventListener('click', async function(event)
+  form.addEventListener('submit', async function(event)
   {
-    // Obtains Attributes specified in the html form element and
-    // produces a URL with the necessary queries to be sent to 
-    // the server script get request at /cars/
-
-
-    
-    // Calls Get request at /api/cars/ with the relevant
-    // parameters also included
-    try
+   try
     {
+      event.preventDefault()
       const queries = document.querySelectorAll(".car-attribute")
       console.log(queries.value)
       carlist = await get("/api/cars", queries)
@@ -288,7 +236,6 @@ async function render_car_filter(){
   }
   );
 }
-
 
 
 
