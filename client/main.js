@@ -196,7 +196,7 @@ async function render_car_filter(){
     //Capacity <input name="capacity" type="text", class="car-attribute form-control">
     //<input name="available" value="yes", class="car-attribute invisibleinfo form-control">
  // </form>
- 
+ /*
   queries = [{"name":"available", "value": "yes"}]
   allcars = await get("/api/cars", queries)
   allmakes = get_list_of_values(allcars, "make")
@@ -229,7 +229,7 @@ async function render_car_filter(){
 
 
 
-  /*
+  
   queries = [{"name":"available", "value": "yes"}]
   allcars = await get("/api/cars", queries)
   allmakes = get_list_of_values(allcars, "make")
@@ -243,7 +243,7 @@ async function render_car_filter(){
     let option = createElement("OPTION", select, undefined, make.toUpperCase())
     option.setAttribute("value", make)
     option.setAttribute("class", "search-cars-button")
-  }*/
+  }
   
 
   
@@ -261,7 +261,7 @@ async function render_car_filter(){
   var s = createElement("input", form, "search-cars-button", "Search"); 
   s.setAttribute("type", "submit");
   s.setAttribute("value", "Submit");
-
+  */
   const button = document.getElementById("search-cars-button")
   button.addEventListener('click', async function(event)
   {
