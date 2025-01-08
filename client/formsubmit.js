@@ -1,20 +1,29 @@
+const post = async function(formJSON, url){
+  const response = await fetch(url,
+    {
+        method: 'POST',
+        headers: {
+            "Content-Type": "application/json"
+          },
+        body: formJSON
+    });
+    let body = await response.text()
+    return body
+}
 
-//This Function is responsible for adding new cars
+
+
+
+
+
+//This Function is responsible for adding new cars when button is pressed
 const form = document.getElementById('my_form');
 form.addEventListener('submit', async function(event){
     event.preventDefault();
     const formData = new FormData(form);
     const formJSON = JSON.stringify(Object.fromEntries(formData.entries()));
     console.log("Form data", formJSON);
-    const response = await fetch('http://127.0.0.1:3000/api/cars',
-        {
-            method: 'POST',
-            headers: {
-                "Content-Type": "application/json"
-              },
-            body: formJSON
-        });
-    let body = await response.text();
+    let body = post(formJSON, "http://127.0.0.1:3000/api/cars")
     document.getElementById('content').innerHTML="ADDED";
 })
 
@@ -69,15 +78,19 @@ create_booking_button = function(){
           response = await fetch(car_url);
           const car = await response.json();
           display_email_form(car) 
+          await on_email_submit()
         })
   return booking_button
   
 }
 
 
-create_customer_details = function(car)
+
+//---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+display_email_form = function(car)
 {
   
+
   carlistdiv = document.getElementById('carlist')
   carlistdiv.innerHTML = ""
   customerdetailsdiv = document.getElementById("customerdetails")
@@ -100,6 +113,9 @@ create_customer_details = function(car)
   s.setAttribute("value", "Submit");
 
   console.log("PAGE UPDATED")
+}
+on_email_submit = function()
+{
   const custform = document.getElementById("customer_form");
   custform.addEventListener('submit', async function(event)
     {
@@ -108,15 +124,10 @@ create_customer_details = function(car)
       const emailID = new FormData(custform);
       const emailJSON = (Object.fromEntries(emailID.entries()));
       console.log("Form data", emailJSON);
-
-      var customer = await get_or_create_customer(emailJSON)
-      book_car(car, customer)
+      get_or_create_customer(emailJSON)
     })
+
 }
-
-
-
-
 get_or_create_customer = async function(emailJSON)
 {
 
@@ -136,33 +147,12 @@ get_or_create_customer = async function(emailJSON)
 
   // OR CREATE CUSTOMER IF IT IS A NEW CUSTOMER
   console.log("CREATING NEW CUSTOMER")
-
-
-
-
-  await get_other_customer_details()  
-  
-
-
-  response = await fetch('http://127.0.0.1:3000/api/customers',
-    {
-      method: 'POST',
-      headers: 
-      {
-        "Content-Type": "application/json"
-      },
-        body: emailJSON
-    }
-  );
-let body = (await response.json());
-customer = body[body.length-1]
-return customer
-
+  create_customer(cust_emailID)  
 }
 
+display_name_form = function()
+{
 
-get_other_customer_details = function(customer)
-  {
     customerdetailsdiv = document.getElementById("customerdetails")
     customerdetailsdiv.innerHTML = ""
     createElement("H1", customerdetailsdiv, undefined, "Continue Setting Up Account for " + cust_emailID)
@@ -189,49 +179,31 @@ get_other_customer_details = function(customer)
     s.setAttribute("type", "submit");
     s.setAttribute("value", "Submit");
 
+}
 
+create_customer = async function(cust_emailID)
+  {
+    display_name_form()
     const custform = document.getElementById("customer_form");
     custform.addEventListener('submit', async function(event)
       {
-      console.log("BUTTON PRESSEDDD")
       event.preventDefault();
-      const emailID = new FormData(custform);
-      const emailJSON = (Object.fromEntries(emailID.entries()));
-      console.log("Form data", emailJSON);
-      update_customer_info(customer)
+      const formData = new FormData(custform);
+      const formJSON = (Object.fromEntries(formData.entries()));
+      formJSON.email = cust_emailID
+      console.log("Form data", formJSON);
+      JSONform = JSON.stringify(formJSON)
+      post(JSONform, "http://127.0.0.1:3000/api/customers")
       }
     )
     } 
-
-
-update_customer_info = async function(customer){
-  JSONform = JSON.stringify(customer)
-  const response = await fetch('http://127.0.0.1:3000/api/bookings',
-    {
-        method: 'POST',
-        headers: {
-            "Content-Type": "application/json"
-          },
-        body: JSONform
-    });
-
-}
-
 
 book_car = async function(car, customer)
 {
   console.log(car)
   JSONform = JSON.stringify({"customerid": customer.id, "carid": car.id})
-  const response = await fetch('http://127.0.0.1:3000/api/bookings',
-    {
-        method: 'POST',
-        headers: {
-            "Content-Type": "application/json"
-          },
-        body: JSONform
-    });
-let body = await response.text();
-document.getElementById('content').innerHTML="ADDED", body;
+  let body = post(JSONform, 'http://127.0.0.1:3000/api/bookings')
+  document.getElementById('content').innerHTML="ADDED", body;
 
 }
 

@@ -1,1 +1,1 @@
-[{"id":"customer1","email":"jacobmckerrell@gmail.com","name":"Jacob McKerrell"},{"id":"customer2","name":"","email":"booker@booker.com"},{"id":"customer3","email":"oold"},{"id":"customer4","email":"brand_new_email@test.com"},{"id":"customer5"},{"id":"customer6","email":""},{"id":"customer7","email":"accd"}]
+[{"id":"customer1","firstname":"Jacob","surname":"McKerrell","email":"jacobmckerrell@gmail.com"},{"id":"customer2","firstname":"Graeme","surname":"McKerrrell","email":"gmckerrell@gmail.com"}]

@@ -38,7 +38,7 @@ app.post("/api/cars/", function(req, resp){
     let make = req.body.make.toLowerCase()
     let model = req.body.model.toLowerCase()
     let capacity = req.body.capacity
-    let registration = req.body.registration.toLowerCase()
+    //let registration = req.body.registration.toLowerCase()
     let available = true
     let newCar = {"id": id, "make": make.toLowerCase(), "model": model.toLowerCase(), "capacity": capacity, "available": available}
     cars.push(newCar)
@@ -52,11 +52,13 @@ app.post("/api/cars/", function(req, resp){
 app.post("/api/customers", function(req, resp)
 {
   //add new customer
+  console.log("ADDDING NOEW CUSGOMERRR")
   let customers = require("./data/customers.json")
   let id = get_next_id(customers, "customer")
-  let name = req.body.name
-  let email = req.body.emailID
-  let newCustomer = {"id": id, "name": name, "email": email} 
+  let firstname = req.body.firstname
+  let surname = req.body.surname
+  let email = req.body.email
+  let newCustomer = {"id": id, "firstname": firstname, "surname": surname, "email": email} 
   customers.push(newCustomer)
   let customerText = JSON.stringify(customers)
   fs.writeFileSync("./data/customers.json", customerText)
