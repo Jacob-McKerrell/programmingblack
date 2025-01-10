@@ -1,5 +1,6 @@
 function post(entity, relativeURL){
-  url = window.location.href + relativeURL.slice(1)
+  console.log(relativeURL)
+  url = window.location.origin + relativeURL
   const response = fetch(url,
     {
         method: 'POST',
@@ -9,17 +10,20 @@ function post(entity, relativeURL){
         body: JSON.stringify(entity)
     })
     .then(response => response.json())
-    .catch( (error) => alert(error))
+    .catch( (error) => alert("UNABLE TO CONNECT TO SERVER, ITEM NOT ADDED\n\n"+error))
     return response
 }
-function create_new_car(car_details){
-  post(car_details, "/api/cars")
+async function create_new_car(car_details){
+  console.log("Creating Car")
+  response = await post(car_details, "/api/cars")
+  console.log(response)
+
 }
 //render_car_admin(create_new_car)
 
 
-function get(relativeURL, queries){
-  const url = new URL(relativeURL, window.location.href);
+function get(relativeURL, queries, successfunction){
+  const url = new URL(relativeURL, window.location.href);//
   if (queries){
     for (let i =0; i < queries.length; i++)
     {
@@ -30,12 +34,16 @@ function get(relativeURL, queries){
         }     
     }
   }
-    console.log(url.href)
-    let response = fetch(url.href)
+    response = fetch(url.href)
     .then(response => response.json())
-    .catch( (error) => alert(error))
+    .catch( (error) => alert("UNABLE TO CONNECT TO SERVER\n\n"+error))
+    console.log("RESPONSE: ", response, url.href)
     return response
+  
+   
 }
+
+
 
 //This function is responsible for filtering and displaying cars
 
@@ -46,12 +54,7 @@ async function get_customer_details_from_email(email)
 {
   queries = [{"name": "email", "value": email}]
   const customers = await get("/api/customers", queries)
-  console.log(customers, queries)
-  if (customers.length == 0)
-    {
-    return undefined
-    }
-  else{
+  if (customers){
     return customers[0]
   }   
 }
@@ -83,7 +86,7 @@ function create_new_customer(customer_details, status){
   return post(customer_details, "/api/customers")
 }
 
-function change_car_availability_status(car_details){
+function change_car_availability_status(car_details, status){
   car_details.available = status
   const url = new URL("/api/cars/" + car_details.id, window.location.href);
   url.searchParams.append("available", car_details.available);
@@ -96,7 +99,7 @@ function change_car_availability_status(car_details){
         body: JSON.stringify(car_details)
     })
   .then(response => response.json())
-  .catch( (error) => alert(error))
+  .catch( (error) => alert("UNABLE TO CONNECT TO SERVER, ITEM NOT UPDATED\n\n"+error))
 
   return response
 }
@@ -181,7 +184,7 @@ function createElement(name, container, IDName, innerText) {
 function render_car_admin(create_new_car) {
   console.log("RENDERING CAR ADMIIN")
   //This Function is responsible for adding new cars when button is pressed
-  const form = document.getElementByIUd('my_form');
+  const form = document.getElementById('my_form');
   form.addEventListener('submit', async function(event){
     event.preventDefault();
     create_new_car(Object.fromEntries(new FormData(form).entries()));   
@@ -191,12 +194,15 @@ function render_car_admin(create_new_car) {
   button.addEventListener('submit', async function(event){
     event.preventDefault();
     console.log("DO THIS FAMMMM")
-    allcars = get("/api/cars", queries=[])
-    for (i in cars){
-      car_details = cars[i]
-      console.log("DO THIS FAMMMM")
-      change_car_availability_status(car_details, "yes");   
+    allcars = await get("/api/cars", queries=[])
+    if (allcars){
+      for (i in cars){
+        car_details = cars[i]
+        console.log("DO THIS FAMMMM")
+        change_car_availability_status(car_details, "yes");   
+      }
     }
+    
   })
 }
 
@@ -248,9 +254,9 @@ function render_car_filter(){
   div = document.getElementById("content")
   var form = createElement("FORM", div)
 
-  createElement("H3", form,"", "Model")
+  createElement("H3", form,"", "Make")
   var ID = createElement("INPUT", form, undefined)
-  ID.setAttribute("name", "model")
+  ID.setAttribute("name", "make")
   ID.setAttribute("type", "text")
   ID.setAttribute("class", "car-attribute form-control")
 
@@ -266,27 +272,34 @@ function render_car_filter(){
   ID.setAttribute("type", "text")
   ID.setAttribute("class", "car-attribute form-control")
 
-  
+  //set availability criteria
+  var  available = createElement("INPUT", form)
+  available.setAttribute("name", "available")
+  available.setAttribute("value", "yes")
+  available.setAttribute("class", "car-attribute form-control")
+
+
+
+
   var button = createElement("INPUT", form, "clickme")
   button.setAttribute("type", "submit");
   button.setAttribute("value", "Submit");
 
+ 
+
 
   form.addEventListener('submit', async function(event)
   {
-   try
-    {
-      event.preventDefault()
-      const queries = document.querySelectorAll(".car-attribute")
-      console.log(queries.value)
-      carlist = await get("/api/cars", queries)
-      console.log(carlist)
-      render_car_list(carlist)      
-      console.log("TAHTS ALL")
-    } catch(e) 
-    {
-      alert(e); // Displays the Error if something goes wrong!
-    }     
+    event.preventDefault()
+    const queries = document.querySelectorAll(".car-attribute")
+    console.log(queries.value)
+    carlist = await get("/api/cars", queries)
+    console.log("CARLIST:", carlist)
+    if (carlist){
+        console.log(carlist)
+        render_car_list(carlist)      
+        console.log("TAHTS ALL")
+      }     
   }
   );
 }
@@ -302,21 +315,28 @@ function render_car_list(carlist, buttons=true){
   {
     car = carlist[i]
     console.log("CAR IS HRER",car)
-    createElement("H1",  div, undefined, car.make + " " + car.model.toUpperCase());
-    createElement("P",  div, undefined, "Capacity: " + car.capacity + " Persons");
+    container = createElement("DIV", div)
+    container.setAttribute("class", car.available)
+    createElement("H1",  container, undefined, car.make + " " + car.model.toUpperCase());
+    createElement("P",  container, undefined, "Capacity: " + car.capacity + " Persons");
     if (buttons){
-      const button = render_car_selection_button(car, render_email_form,)
+      const button = render_car_selection_button(car, container, render_email_form,)
     }
   }    
 }
 
 
-render_car_selection_button = function(instance, render_email_form){
+async function render_car_selection_button(instance,div, render_email_form){
   const button = createElement("BUTTON", div, instance.id, "Book This Car")
   button.addEventListener('click', async function(event)
         {
           car = await get("/api/cars/"+button.id)
-          render_email_form(car) 
+          if (car){
+            console.log("CAR", car)
+            render_email_form(car)
+          }
+          
+          
         })
   return button 
 }
@@ -395,8 +415,7 @@ function render_customer_info_form(email, car_details){
     console.log("INFO BUTTON PRESSED")
     customer_details = Object.fromEntries(new FormData(form).entries())
     customer_details.email = email
-    all_customers_details = await create_new_customer(customer_details)
-    customer_details = all_customers_details[all_customers_details.length-1]
+    customer_details = await create_new_customer(customer_details)
     if (car_details){
         create_new_booking(car_details, customer_details)
         modify_car_availability()
@@ -422,17 +441,22 @@ async function render_customer_bookings(customer_details){
   console.log("HERE MATEY")
   let queries = [{"name": "customerid", "value": customer_details.id}]
   let bookings = await get("/api/bookings", queries)
-  carlist = []
-  for (i in bookings){
-    booking_details = bookings[i]
-    let queries = [{"name": "id", "value": booking_details.carid}]
-    car_details = await get("/api/cars", queries)
-    carlist.push(car_details[0])
+  if (bookings){
+    carlist = []
+    for (i in bookings){
+      booking_details = bookings[i]
+      let queries = [{"name": "id", "value": booking_details.carid}]
+      car_details = await get("/api/cars", queries)
+      if (car_details){
+        carlist.push(car_details[0])
+      }
+    }
+    console.log(carlist, carlist.length)
+    render_car_list(carlist, buttons=false)
   }
-  console.log(carlist, carlist.length)
-  render_car_list(carlist, buttons=false)
 }
 
 
-render_customer_login()
-render_car_filter()
+//render_customer_login()
+//render_car_filter()
+render_car_admin(create_new_car)
