@@ -1,14 +1,16 @@
-async function post(entity, relativeURL){
+function post(entity, relativeURL){
   url = window.location.href + relativeURL.slice(1)
-  const response = await fetch(url,
+  const response = fetch(url,
     {
         method: 'POST',
         headers: {
             "Content-Type": "application/json"
           },
         body: JSON.stringify(entity)
-    });
-    return await response.json()
+    })
+    .then(response => response.json())
+    .catch( (error) => alert(error))
+    return response
 }
 function create_new_car(car_details){
   post(car_details, "/api/cars")
@@ -16,7 +18,7 @@ function create_new_car(car_details){
 //render_car_admin(create_new_car)
 
 
-async function get(relativeURL, queries){
+function get(relativeURL, queries){
   const url = new URL(relativeURL, window.location.href);
   if (queries){
     for (let i =0; i < queries.length; i++)
@@ -29,9 +31,10 @@ async function get(relativeURL, queries){
     }
   }
     console.log(url.href)
-    let response = await fetch(url.href);
-    return response.json()
-
+    let response = fetch(url.href)
+    .then(response => response.json())
+    .catch( (error) => alert(error))
+    return response
 }
 
 //This function is responsible for filtering and displaying cars
@@ -80,19 +83,22 @@ function create_new_customer(customer_details, status){
   return post(customer_details, "/api/customers")
 }
 
-async function change_car_availability_status(car_details){
+function change_car_availability_status(car_details){
   car_details.available = status
   const url = new URL("/api/cars/" + car_details.id, window.location.href);
   url.searchParams.append("available", car_details.available);
-  const response = await fetch(url,
+  const response = fetch(url,
     {
         method: 'PATCH',
         headers: {
             "Content-Type": "application/json"
           },
         body: JSON.stringify(car_details)
-    });
-  return response.json()
+    })
+  .then(response => response.json())
+  .catch( (error) => alert(error))
+
+  return response
 }
 
 function create_new_booking(car_details, customer_details){
@@ -114,11 +120,18 @@ for(let button of booking_buttons){
 }
 
 
-function modify_car_availability(car_details){
+function modify_car_availability(){
+    const response = fetch(window.location.href+"/api/cars/carid?available=no",
+      {
+          method: 'POST',
+          headers: {
+              "Content-Type": "application/json"
+            },
+      });
+  }
 
 
 
-}
 
 
 
@@ -168,7 +181,7 @@ function createElement(name, container, IDName, innerText) {
 function render_car_admin(create_new_car) {
   console.log("RENDERING CAR ADMIIN")
   //This Function is responsible for adding new cars when button is pressed
-  const form = document.getElementById('my_form');
+  const form = document.getElementByIUd('my_form');
   form.addEventListener('submit', async function(event){
     event.preventDefault();
     create_new_car(Object.fromEntries(new FormData(form).entries()));   
@@ -214,8 +227,8 @@ function render_customer_login(){
       render_customer_bookings(customer_details)
     }
     else{
-      
-      render_customer_info_form(customer_email, car_details)
+      console.log("USER DOESNT EXIST")
+      render_customer_info_form(customer_email)
     }
   })
 }
@@ -234,6 +247,12 @@ function render_car_filter(){
  
   div = document.getElementById("content")
   var form = createElement("FORM", div)
+
+  createElement("H3", form,"", "Model")
+  var ID = createElement("INPUT", form, undefined)
+  ID.setAttribute("name", "model")
+  ID.setAttribute("type", "text")
+  ID.setAttribute("class", "car-attribute form-control")
 
   createElement("H3", form,"", "Model")
   var ID = createElement("INPUT", form, undefined)
@@ -378,18 +397,24 @@ function render_customer_info_form(email, car_details){
     customer_details.email = email
     all_customers_details = await create_new_customer(customer_details)
     customer_details = all_customers_details[all_customers_details.length-1]
-    console.log(customer_details)
     if (car_details){
         create_new_booking(car_details, customer_details)
-        modify_car_availability(car_details)
+        modify_car_availability()
         render_customer_bookings(customer_details)
     }
     else{
       console.log("customer Added")
+      div = document.getElementById("content")
+      createElement("H2", div, undefined, customer_details.email + "Added as a customer")
     }
 
 
   })
+}
+
+
+function render_created_customer_message(){
+  
 }
 
 

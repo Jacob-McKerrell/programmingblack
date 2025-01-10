@@ -4,7 +4,7 @@ const {v4: uuidv4} =require("uuid")
 
 const app = express()
 const hostname = '127.0.0.1';
-const port = 3000;
+const port = 8080;
 
 
 app.use(express.static('client'));
@@ -45,6 +45,8 @@ app.patch("/api/cars/:id/", function(req, resp){
   fs.writeFileSync('./data/cars.json', carsText)
   resp.status(200).send(carsText)
 })
+
+
 
 
 
@@ -93,7 +95,10 @@ app.post("/api/bookings", function(req, resp){
   bookings.push(newBooking)
   let bookingText = JSON.stringify(bookings)
   fs.writeFileSync("./data/bookings.json", bookingText)
+  
+  //car_patch()
   resp.status(200).send(bookingText)
+
 })
 
 
@@ -246,6 +251,6 @@ const cb0 = function (req, resp, next) {
 
 
 
-app.listen(3000, () =>{
+app.listen(port, () =>{
     console.log(`server running at http://${hostname}:${port}/`)
 }) 
