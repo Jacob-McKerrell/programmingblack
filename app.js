@@ -69,23 +69,20 @@ update = function(req, resp, jsonpath){
     }
     let allEntities = require(jsonpath)
     filteredCars = filter_entity_list(req, allEntities, ignore=ignore_list)
-    let entity_to_patch = filteredCars[0]
+    let entity = filteredCars[0]
 
-    for (i in allEntities){
-        entity = allEntities[i]
-        if (entity == entity_to_patch){
-            allEntities.splice(i, i)
-        }
-    }
+    index = allEntities.indexOf(entity)
+    allEntities.splice(index, 1)
+    
 
     for (param in req.query){
         if (param != "id"){
             entity[param] = req.query[param]
         }
     }
-    remove
+    
     if (allEntities.includes(entity) == false){resp.status(404)}
-    allEntities
+    allEntities.push(entity)
     let entityText = JSON.stringify(allEntities)
     fs.writeFileSync(jsonpath, entityText)
     resp.status(200).send(entity)

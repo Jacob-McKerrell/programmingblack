@@ -110,7 +110,7 @@ function change_car_availability_status(car_details, status){
 async function create_new_booking(car_details, customer_details){
   const booking_details = {"customerid": customer_details.id, "carid": car_details.id}
   await change_car_availability_status(car_details, "no")
-  return post(booking_details, '/api/bookings')
+  return await post(booking_details, '/api/bookings')
 
 }
 
