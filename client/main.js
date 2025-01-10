@@ -181,30 +181,6 @@ function createElement(name, container, IDName, innerText) {
 }
 
 
-function render_car_admin(create_new_car) {
-  console.log("RENDERING CAR ADMIIN")
-  //This Function is responsible for adding new cars when button is pressed
-  const form = document.getElementById('my_form');
-  form.addEventListener('submit', async function(event){
-    event.preventDefault();
-    create_new_car(Object.fromEntries(new FormData(form).entries()));   
-  })
-
-  const button = document.getElementById("reset_availabilty")
-  button.addEventListener('submit', async function(event){
-    event.preventDefault();
-    console.log("DO THIS FAMMMM")
-    allcars = await get("/api/cars", queries=[])
-    if (allcars){
-      for (i in cars){
-        car_details = cars[i]
-        console.log("DO THIS FAMMMM")
-        change_car_availability_status(car_details, "yes");   
-      }
-    }
-    
-  })
-}
 
 function render_customer_login(){
   // Create a form dynamically
@@ -457,6 +433,5 @@ async function render_customer_bookings(customer_details){
 }
 
 
-//render_customer_login()
-//render_car_filter()
-render_car_admin(create_new_car)
+render_customer_login()
+render_car_filter()
