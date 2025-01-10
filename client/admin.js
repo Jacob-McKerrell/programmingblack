@@ -15,6 +15,9 @@ function post(entity, relativeURL){
   }
   async function create_new_car(car_details){
     console.log("Creating Car")
+    car_details.available = "yes"
+    console.log(car_details)
+    console.log(car_details.available)
     response = await post(car_details, "/api/cars")
     console.log(response)
   

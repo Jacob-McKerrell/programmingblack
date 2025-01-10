@@ -57,6 +57,9 @@ create = function(req, resp, jsonpath, attributes){
 }
 
 update = function(req, resp, jsonpath){
+
+    
+
     req.query.id = req.params.id
     let ignore_list = []
     for (param in req.query){
@@ -66,16 +69,26 @@ update = function(req, resp, jsonpath){
     }
     let allEntities = require(jsonpath)
     filteredCars = filter_entity_list(req, allEntities, ignore=ignore_list)
-    let entity = filteredCars[0]
+    let entity_to_patch = filteredCars[0]
+
+    for (i in allEntities){
+        entity = allEntities[i]
+        if (entity == entity_to_patch){
+            allEntities.splice(i, i)
+        }
+    }
+
     for (param in req.query){
         if (param != "id"){
             entity[param] = req.query[param]
         }
     }
+    remove
     if (allEntities.includes(entity) == false){resp.status(404)}
+    allEntities
     let entityText = JSON.stringify(allEntities)
     fs.writeFileSync(jsonpath, entityText)
-    resp.status(200).send(entityText)
+    resp.status(200).send(entity)
 }
 
 remove = function(req, resp, jsonpath){

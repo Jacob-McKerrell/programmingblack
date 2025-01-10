@@ -15,6 +15,9 @@ function post(entity, relativeURL){
 }
 async function create_new_car(car_details){
   console.log("Creating Car")
+  car_details["available"] = "yes"
+  console.log(car_details)
+  console.log(car_details.available)
   response = await post(car_details, "/api/cars")
   console.log(response)
 
@@ -104,9 +107,9 @@ function change_car_availability_status(car_details, status){
   return response
 }
 
-function create_new_booking(car_details, customer_details){
+async function create_new_booking(car_details, customer_details){
   const booking_details = {"customerid": customer_details.id, "carid": car_details.id}
-  change_car_availability_status(car_details, "no")
+  await change_car_availability_status(car_details, "no")
   return post(booking_details, '/api/bookings')
 
 }
