@@ -276,7 +276,7 @@ function render_car_filter(){
     console.log("CARLIST:", carlist)
     if (carlist){
         console.log(carlist)
-        render_car_list(carlist)      
+        render_car_list_page(carlist)      
         console.log("TAHTS ALL")
       }     
   }
@@ -287,7 +287,22 @@ function render_car_filter(){
 
 
 
-function render_car_list(carlist, buttons=true){
+
+
+
+function render_image(div, file_name){
+  const image = createElement("IMG", div)
+  image.setAttribute("src", file_name)
+  image.setAttribute("max-width", "60%")
+  image.setAttribute("height", "500px")
+  image.setAttribute("class", "float-right")
+
+}
+
+
+
+
+function render_car_list_page(carlist, buttons=true){
   div = document.getElementById('content')
   div.innerHTML = ''
   for (let i =0; i < carlist.length; i++)
@@ -295,18 +310,35 @@ function render_car_list(carlist, buttons=true){
     car = carlist[i]
     console.log("CAR IS HRER",car)
     container = createElement("DIV", div)
-    container.setAttribute("class", car.available)
-    createElement("H1",  container, undefined, car.make + " " + car.model.toUpperCase());
-    createElement("P",  container, undefined, "Capacity: " + car.capacity + " Persons");
-    if (buttons){
-      const button = render_car_selection_button(car, container, render_email_form,)
+    container.setAttribute("class", "w-100 h-25 d-inline-flex p-2 bd-highlight")
+    //Alternates the order of the image and the text
+    if (i%2 != 0){
+      file_name = "assets/img/" + car.make + "-" + car.model +".jpg"
+      render_image(container, file_name)
     }
+    //END
+    const info = createElement("DIV", container)
+    info.setAttribute("class", "bg-info w-25")
+    const name = createElement("H3",  info, undefined, car.make.toUpperCase() + " " + car.model.toUpperCase());
+    createElement("P",  info, undefined, "Capacity: " + car.capacity + " Persons");
+    if (buttons){
+      const button = render_car_selection_button(car, info, render_email_form,)
+    }
+    //Alternates the order of the image and the text#
+    if (i%2 == 0){
+      file_name = "assets/img/" + car.make + "-" + car.model +".jpg"
+      render_image(container, file_name)
+    }
+    //END
+    createElement("SPACER", div)
   }    
 }
 
 
 async function render_car_selection_button(instance,div, render_email_form){
+  
   const button = createElement("BUTTON", div, instance.id, "Book This Car")
+  button.setAttribute("class", "btn btn-primary align-middle")
   button.addEventListener('click', async function(event)
         {
           car = await get("/api/cars/"+button.id)
@@ -431,7 +463,7 @@ async function render_customer_bookings(customer_details){
       }
     }
     console.log(carlist, carlist.length)
-    render_car_list(carlist, buttons=false)
+    render_car_list_page(carlist, buttons=false)
   }
 }
 
