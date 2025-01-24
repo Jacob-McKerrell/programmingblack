@@ -15,9 +15,7 @@ function post(entity, relativeURL){
 }
 async function create_new_car(car_details){
   console.log("Creating Car")
-  car_details["available"] = "yes"
   console.log(car_details)
-  console.log(car_details.available)
   response = await post(car_details, "/api/cars")
   console.log(response)
 
@@ -44,6 +42,31 @@ function get(relativeURL, queries, successfunction){
     return response
   
    
+}
+
+
+
+async function filter_out_unavailable_cars(car_list, date){
+  queries = [{"name":"date", "value": date}]
+  bookings = await get("/api/bookings", queries)
+  
+  booking_car_ids = []
+  for (let booking of bookings){
+    booking_car_ids.push(booking.carid)
+  }
+  console.log("ALL BOOKINGS", bookings)
+  console.log(booking_car_ids)
+
+
+  filtered_list = []
+  for (let car of car_list){
+    if (booking_car_ids.includes(car.id) == false){
+      filtered_list.push(car)
+    }
+  }
+
+  console.log("LIST DO BE FILTERED:", filtered_list)
+  return filtered_list
 }
 
 
@@ -90,9 +113,7 @@ function create_new_customer(customer_details, status){
 }
 
 function change_car_availability_status(car_details, status){
-  car_details.available = status
   const url = new URL("/api/cars/" + car_details.id, window.location.href);
-  url.searchParams.append("available", car_details.available);
   const response = fetch(url,
     {
         method: 'PATCH',
@@ -107,12 +128,12 @@ function change_car_availability_status(car_details, status){
   return response
 }
 
-async function create_new_booking(car_details, customer_details){
-  const booking_details = {"customerid": customer_details.id, "carid": car_details.id}
-  await change_car_availability_status(car_details, "no")
-  return await post(booking_details, '/api/bookings')
-
+async function create_new_booking(car_details, customer_details, date){
+  console.log("DATE FOR BOOKING", date)
+  const booking_details = {"customerid": customer_details.id, "carid": car_details.id, "date": date}
+  return post(booking_details, "/api/bookings")
 }
+
 
 
 
@@ -125,7 +146,7 @@ for(let button of booking_buttons){
   })
 }
 
-
+// NOT USED ANYWHERE
 function modify_car_availability(){
     const response = fetch(window.location.href+"/api/cars/carid?available=no",
       {
@@ -185,7 +206,7 @@ function createElement(name, container, IDName, innerText) {
 
 
 
-function render_customer_login(){
+function render_customer_login(date){
   // Create a form dynamically
   div = document.getElementById("content")
   var form = createElement("form", div, "customer_email_form");
@@ -209,7 +230,15 @@ function render_customer_login(){
     customer_email = Object.fromEntries(new FormData(form).entries()).email
     const customer_details = await get_customer_details_from_email(customer_email);
     if (customer_details){
-      render_customer_bookings(customer_details)
+      customer_bookings = await get_customer_bookings(customer_details)
+      console.log("BOOKINGS:", customer_bookings)
+      div.innerHTML = ""
+      welcomestring = "Welcome Back " + customer_details.firstname[0].toUpperCase() + customer_details.firstname.substring(1).toLowerCase()+ " Here are your Bookings!"  
+      createElement("H1", div, "", welcomestring)
+      console.log("titleAppearing!?")
+      render_car_list_page(customer_bookings, div,date,  buttons=false)
+      //render_customer_info_form(customer_email)
+
     }
     else{
       console.log("USER DOESNT EXIST")
@@ -251,14 +280,13 @@ function render_car_filter(){
   ID.setAttribute("type", "text")
   ID.setAttribute("class", "car-attribute form-control")
 
-  //set availability criteria
-  var  available = createElement("INPUT", form)
-  available.setAttribute("name", "available")
-  available.setAttribute("value", "yes")
-  available.setAttribute("class", "car-attribute form-control")
 
 
-
+  var date = createElement("INPUT", form, "dateinput")
+  date.setAttribute("type", "date")
+  date.setAttribute("name", "date")
+  date.setAttribute("required", "true")
+  date.setAttribute("class", "form-control")
 
   var button = createElement("INPUT", form, "clickme")
   button.setAttribute("type", "submit");
@@ -271,12 +299,18 @@ function render_car_filter(){
   {
     event.preventDefault()
     const queries = document.querySelectorAll(".car-attribute")
-    console.log(queries.value)
+    dateObject = document.getElementById("dateinput")
     carlist = await get("/api/cars", queries)
     console.log("CARLIST:", carlist)
     if (carlist){
+        console.log("OLD CCARLIST", carlist)
+        console.log(queries)
+        console.log("Date:", dateObject.value)
         console.log(carlist)
-        render_car_list_page(carlist)      
+        carlist = await filter_out_unavailable_cars(carlist,dateObject.value)
+        div = document.getElementById('content')
+        div.innerHTML = ''
+        render_car_list_page(carlist, div, dateObject.value)      
         console.log("TAHTS ALL")
       }     
   }
@@ -293,24 +327,43 @@ function render_car_filter(){
 function render_image(div, file_name){
   const image = createElement("IMG", div)
   image.setAttribute("src", file_name)
-  image.setAttribute("max-width", "60%")
-  image.setAttribute("height", "500px")
-  image.setAttribute("class", "float-right")
+  image.setAttribute("width", "75%")
+  image.setAttribute("class", "img-fluid")
 
 }
 
 
 
-
-function render_car_list_page(carlist, buttons=true){
+async function render_customer_bookings(customer_details, date){
+  console.log("HERE MATEY")
+  let queries = [{"name": "customerid", "value": customer_details.id}]
+  let bookings = await get("/api/bookings", queries)
+  carlist = []
+  for (i in bookings){
+    booking_details = bookings[i]
+    let queries = [{"name": "id", "value": booking_details.carid}]
+    car_details = await get("/api/cars", queries)
+    carlist.push(car_details[0])
+  }
+  console.log(carlist, carlist.length)
   div = document.getElementById('content')
-  div.innerHTML = ''
+  div.innerHTML = ""
+  render_car_list_page(carlist,div,date, buttons=false)
+}
+
+
+
+
+
+
+function render_car_list_page(carlist,div,date, buttons=true){
+  console.log("HERRREEE", carlist)
   for (let i =0; i < carlist.length; i++)
   {
     car = carlist[i]
     console.log("CAR IS HRER",car)
     container = createElement("DIV", div)
-    container.setAttribute("class", "w-100 h-25 d-inline-flex p-2 bd-highlight")
+    container.setAttribute("class", "w-100 h-25 d-inline-flex p-2 bd-highlight container py-3")
     //Alternates the order of the image and the text
     if (i%2 != 0){
       file_name = "assets/img/" + car.make + "-" + car.model +".jpg"
@@ -319,10 +372,10 @@ function render_car_list_page(carlist, buttons=true){
     //END
     const info = createElement("DIV", container)
     info.setAttribute("class", "bg-info w-25")
-    const name = createElement("H3",  info, undefined, car.make.toUpperCase() + " " + car.model.toUpperCase());
+    createElement("H3",  info, undefined, car.make.toUpperCase() + " " + car.model.toUpperCase());
     createElement("P",  info, undefined, "Capacity: " + car.capacity + " Persons");
     if (buttons){
-      const button = render_car_selection_button(car, info, render_email_form,)
+      const button = render_car_selection_button(car, info, render_email_form,date)
     }
     //Alternates the order of the image and the text#
     if (i%2 == 0){
@@ -335,7 +388,7 @@ function render_car_list_page(carlist, buttons=true){
 }
 
 
-async function render_car_selection_button(instance,div, render_email_form){
+async function render_car_selection_button(instance,div, render_email_form, date){
   
   const button = createElement("BUTTON", div, instance.id, "Book This Car")
   button.setAttribute("class", "btn btn-primary align-middle")
@@ -344,7 +397,7 @@ async function render_car_selection_button(instance,div, render_email_form){
           car = await get("/api/cars/"+button.id)
           if (car){
             console.log("CAR", car)
-            render_email_form(car)
+            render_email_form(car, date)
           }
           
           
@@ -352,7 +405,7 @@ async function render_car_selection_button(instance,div, render_email_form){
   return button 
 }
 
-function render_email_form (car_details)
+function render_email_form (car_details, date)
 {
   div = document.getElementById('content')
   div.innerHTML = ""
@@ -362,10 +415,12 @@ function render_email_form (car_details)
   var form = createElement("form", div, "customer_email_form");
 
   // Create an input element for Email
-  var PWD = createElement("input", form);
-  PWD.setAttribute("type", "text");
-  PWD.setAttribute("name", "email");
-  PWD.setAttribute("placeholder", "Email@example.com");
+  var email = createElement("input", form);
+  email.setAttribute("type", "text");
+  email.setAttribute("name", "email");
+  email.setAttribute("placeholder", "Email@example.com");
+  email.setAttribute("required", "true")
+
 
   // Create a submit button
   var s = createElement("input", form);
@@ -380,8 +435,8 @@ function render_email_form (car_details)
     customer_email = Object.fromEntries(new FormData(form).entries()).email
     const customer_details = await get_customer_details_from_email(customer_email);
     if (customer_details){
-      create_new_booking(car_details, customer_details)
-      render_customer_bookings(customer_details)
+      create_new_booking(car_details, customer_details, date)
+      render_customer_bookings(customer_details, date)
 
 
     }
@@ -395,7 +450,7 @@ function render_email_form (car_details)
 
 
 
-function render_customer_info_form(email, car_details){
+function render_customer_info_form(email, car_details, date){
   div = document.getElementById("content")
   div.innerHTML = ""
   createElement("H1", div, undefined, "Continue Setting Up Account for " + email)
@@ -408,17 +463,22 @@ function render_customer_info_form(email, car_details){
   ID.setAttribute("type", "text");
   ID.setAttribute("name", "firstname");
   ID.setAttribute("placeholder", "firstname");
+  ID.setAttribute("required", "true")
   
   // Create an input element for Surname
   var ID = createElement("input", form);
   ID.setAttribute("type", "text");
   ID.setAttribute("name", "surname");
   ID.setAttribute("placeholder", "surname");
+  ID.setAttribute("required", "true")
+
+
 
   // Create a submit button
   var s = createElement("input", form); 
   s.setAttribute("type", "submit");
   s.setAttribute("value", "Submit");
+
 
 
   form.addEventListener('submit', async function(event){
@@ -428,14 +488,14 @@ function render_customer_info_form(email, car_details){
     customer_details.email = email
     customer_details = await create_new_customer(customer_details)
     if (car_details){
-        create_new_booking(car_details, customer_details)
-        modify_car_availability()
+        create_new_booking(car_details, customer_details, date)
         render_customer_bookings(customer_details)
     }
     else{
       console.log("customer Added")
       div = document.getElementById("content")
       createElement("H2", div, undefined, customer_details.email + "Added as a customer")
+      render_customer_bookings(customer_details)
     }
 
 
@@ -448,8 +508,8 @@ function render_created_customer_message(){
 }
 
 
-async function render_customer_bookings(customer_details){
-  console.log("HERE MATEY")
+async function get_customer_bookings(customer_details){
+  console.log("HERE MATEY", customer_details.id)
   let queries = [{"name": "customerid", "value": customer_details.id}]
   let bookings = await get("/api/bookings", queries)
   if (bookings){
@@ -463,7 +523,7 @@ async function render_customer_bookings(customer_details){
       }
     }
     console.log(carlist, carlist.length)
-    render_car_list_page(carlist, buttons=false)
+    return carlist
   }
 }
 

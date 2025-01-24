@@ -16,7 +16,12 @@ app.use("/form", express.static("./client/form.html"))
 read = function(req, resp, jsonpath){
     const entities = require(jsonpath)
     filteredEntities = filter_entity_list(req, entities)
-    resp.status(200).send(filteredEntities)
+    if (filteredEntities){
+        resp.status(200).send(filteredEntities)
+    }
+    else{
+        resp.status(404).send(filteredEntities)
+    }
 }
 
 read_entity = function(req, resp, jsonpath){
