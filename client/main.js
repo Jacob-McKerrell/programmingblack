@@ -206,12 +206,25 @@ function createElement(name, container, IDName, innerText) {
 
 
 
+function nav_bar_functionality(){
+
+  var homebutton = document.getElementById("home_button")
+  var loginbutton = document.getElementById("login_button")
+
+  homebutton.addEventListener("submit", async function(event){
+    console.log("HOME")
+  })
+
+}
+
+
 function render_customer_login(date){
+  console.log("CUSTOMER LOGIN")
   // Create a form dynamically
   div = document.getElementById("content")
   var form = createElement("form", div, "customer_email_form");
 
-  createElement("H3", form, "", "Enter Email to view your Bookings")
+  createElement("H3", form, "", "Enter email to view your bookings")
   // Create an input element for Email
   var PWD = createElement("input", form);
   PWD.setAttribute("type", "text");
@@ -236,7 +249,7 @@ function render_customer_login(date){
       welcomestring = "Welcome Back " + customer_details.firstname[0].toUpperCase() + customer_details.firstname.substring(1).toLowerCase()+ " Here are your Bookings!"  
       createElement("H1", div, "", welcomestring)
       console.log("titleAppearing!?")
-      render_car_list_page(customer_bookings, div,date,  buttons=false)
+      render_car_list_page(customer_bookings, div,date,  buttontype="book")
       //render_customer_info_form(customer_email)
 
     }
@@ -280,7 +293,8 @@ function render_car_filter(){
   ID.setAttribute("type", "text")
   ID.setAttribute("class", "car-attribute form-control")
 
-
+  createElement("H3", form, "", "Location")
+  var ID = createElement("INPUT")
 
   var date = createElement("INPUT", form, "dateinput")
   date.setAttribute("type", "date")
@@ -310,7 +324,7 @@ function render_car_filter(){
         carlist = await filter_out_unavailable_cars(carlist,dateObject.value)
         div = document.getElementById('content')
         div.innerHTML = ''
-        render_car_list_page(carlist, div, dateObject.value)      
+        render_car_list_page(carlist, div, dateObject.value, buttontype="")      
         console.log("TAHTS ALL")
       }     
   }
@@ -335,20 +349,8 @@ function render_image(div, file_name){
 
 
 async function render_customer_bookings(customer_details, date){
-  console.log("HERE MATEY")
-  let queries = [{"name": "customerid", "value": customer_details.id}]
-  let bookings = await get("/api/bookings", queries)
-  carlist = []
-  for (i in bookings){
-    booking_details = bookings[i]
-    let queries = [{"name": "id", "value": booking_details.carid}]
-    car_details = await get("/api/cars", queries)
-    carlist.push(car_details[0])
-  }
-  console.log(carlist, carlist.length)
-  div = document.getElementById('content')
-  div.innerHTML = ""
-  render_car_list_page(carlist,div,date, buttons=false)
+  carlist = get_customer_bookings(customer_details)
+  render_car_list_page(carlist ,date, buttontype="book")
 }
 
 
@@ -356,7 +358,15 @@ async function render_customer_bookings(customer_details, date){
 
 
 
-function render_car_list_page(carlist,div,date, buttons=true){
+
+
+
+
+
+
+
+
+function render_car_list_page(carlist,div,date, buttontype="book"){
   console.log("HERRREEE", carlist)
   for (let i =0; i < carlist.length; i++)
   {
@@ -372,9 +382,16 @@ function render_car_list_page(carlist,div,date, buttons=true){
     //END
     const info = createElement("DIV", container)
     info.setAttribute("class", "bg-info w-25")
-    createElement("H3",  info, undefined, car.make.toUpperCase() + " " + car.model.toUpperCase());
-    createElement("P",  info, undefined, "Capacity: " + car.capacity + " Persons");
-    if (buttons){
+    createElement("H2",  info, undefined, car.make.toUpperCase() + " " + car.model.toUpperCase());
+    createElement("H3",  info, undefined, "Capacity: " + car.capacity + " Persons");
+    if (car.date){
+      createElement("H4", info, undefined, car.date)
+    }
+    else{
+      createElement("H4", info, undefined, date)
+
+    }
+    if (buttontype="book"){
       const button = render_car_selection_button(car, info, render_email_form,date)
     }
     //Alternates the order of the image and the text#
@@ -514,12 +531,18 @@ async function get_customer_bookings(customer_details){
   let bookings = await get("/api/bookings", queries)
   if (bookings){
     carlist = []
+    used_carids = []
     for (i in bookings){
       booking_details = bookings[i]
       let queries = [{"name": "id", "value": booking_details.carid}]
       car_details = await get("/api/cars", queries)
+      used_carids.push(booking_details.carid)
       if (car_details){
-        carlist.push(car_details[0])
+        for (j in car_details){
+          console.log(car_details)
+          car_details[j].date = booking_details.date
+          carlist.push(car_details[j])
+        }
       }
     }
     console.log(carlist, carlist.length)
@@ -527,6 +550,11 @@ async function get_customer_bookings(customer_details){
   }
 }
 
-
+function render_home_page(){
+  div = document.getElementById("content")
+  div.innerHTML = ""
+  p = createElement("P", div, undefined, "Welcome to our Car booking service! - Explore our range of cars available on the beautiful island of Sardinia to make the most of your one day cruise stop off")
+  render_car_filter()
+}
+nav_bar_functionality()
 render_customer_login()
-render_car_filter()
