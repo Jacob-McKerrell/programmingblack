@@ -23,7 +23,7 @@ async function create_new_car(car_details){
 //render_car_admin(create_new_car)
 
 
-function get(relativeURL, queries, successfunction){
+function get(relativeURL, queries){
   const url = new URL(relativeURL, window.location.href);//
   if (queries){
     for (let i =0; i < queries.length; i++)
@@ -35,6 +35,7 @@ function get(relativeURL, queries, successfunction){
         }     
     }
   }
+    console.log("URL:", url.href)
     response = fetch(url.href)
     .then(response => response.json())
     .catch( (error) => alert("UNABLE TO CONNECT TO SERVER\n\n"+error))
@@ -43,6 +44,21 @@ function get(relativeURL, queries, successfunction){
   
    
 }
+
+function remove(relativeURL, itemID){
+  console.log(relativeURL)
+  url = window.location.origin + relativeURL + "/" + itemID
+  const response = fetch(url,
+    {
+        method: 'DELETE',
+        headers: {
+            "Content-Type": "application/json"
+          },
+    })
+}
+
+
+
 
 
 
@@ -206,16 +222,6 @@ function createElement(name, container, IDName, innerText) {
 
 
 
-function nav_bar_functionality(){
-
-  var homebutton = document.getElementById("home_button")
-  var loginbutton = document.getElementById("login_button")
-
-  homebutton.addEventListener("submit", async function(event){
-    console.log("HOME")
-  })
-
-}
 
 
 function render_customer_login(date){
@@ -226,15 +232,18 @@ function render_customer_login(date){
 
   createElement("H3", form, "", "Enter email to view your bookings")
   // Create an input element for Email
-  var PWD = createElement("input", form);
-  PWD.setAttribute("type", "text");
-  PWD.setAttribute("name", "email");
-  PWD.setAttribute("placeholder", "Email@example.com");
+  var email = createElement("input", form);
+  email.setAttribute("type", "text");
+  email.setAttribute("name", "email");
+  email.setAttribute("placeholder", "Email@example.com");
+  email.setAttribute("class", "form-control")
+
 
   // Create a submit button
   var s = createElement("input", form);
   s.setAttribute("type", "submit");
   s.setAttribute("value", "Submit");
+  s.setAttribute("class", "btn btn-info")
 
 
   form.addEventListener('submit', async function(event)
@@ -242,25 +251,35 @@ function render_customer_login(date){
     event.preventDefault();
     customer_email = Object.fromEntries(new FormData(form).entries()).email
     const customer_details = await get_customer_details_from_email(customer_email);
-    if (customer_details){
+    if (customer_details != []){
       customer_bookings = await get_customer_bookings(customer_details)
       console.log("BOOKINGS:", customer_bookings)
       div.innerHTML = ""
-      welcomestring = "Welcome Back " + customer_details.firstname[0].toUpperCase() + customer_details.firstname.substring(1).toLowerCase()+ " Here are your Bookings!"  
-      createElement("H1", div, "", welcomestring)
-      console.log("titleAppearing!?")
-      render_car_list_page(customer_bookings, div,date,  buttontype="book")
-      //render_customer_info_form(customer_email)
-
+      if (customer_bookings){
+        welcomestring = "Welcome Back " + title_case(customer_details.firstname)+ " Here are your Bookings!"  
+        createElement("H1", div, "", welcomestring)
+        console.log("titleAppearing!?")
+        render_car_list_page(customer_bookings, div,date,  buttontype="cancel")
+        //render_customer_info_form(customer_email)
+      }
+      else{
+        welcomestring = "Hi " + title_case(customer_details.firstname) + "It looks like you dont have any bookings - check out what cars we have on offer"
+      }
     }
-    else{
+    else if (customer_details == []){
       console.log("USER DOESNT EXIST")
-      render_customer_info_form(customer_email)
+      render_customer_info_form(customer_email, date)
     }
   })
 }
 
 
+
+
+function title_case(string){
+ return string[0].toUpperCase() + string.substring(1).toLowerCase()
+
+}
 
 
 
@@ -293,8 +312,6 @@ function render_car_filter(){
   ID.setAttribute("type", "text")
   ID.setAttribute("class", "car-attribute form-control")
 
-  createElement("H3", form, "", "Location")
-  var ID = createElement("INPUT")
 
   var date = createElement("INPUT", form, "dateinput")
   date.setAttribute("type", "date")
@@ -305,6 +322,7 @@ function render_car_filter(){
   var button = createElement("INPUT", form, "clickme")
   button.setAttribute("type", "submit");
   button.setAttribute("value", "Submit");
+  button.setAttribute("class", "btn btn-info")
 
  
 
@@ -324,7 +342,12 @@ function render_car_filter(){
         carlist = await filter_out_unavailable_cars(carlist,dateObject.value)
         div = document.getElementById('content')
         div.innerHTML = ''
-        render_car_list_page(carlist, div, dateObject.value, buttontype="")      
+        if (carlist.length !=0){
+          render_car_list_page(carlist, div, dateObject.value, buttontype="book")   
+        }
+        else{
+          createElement("H3", div, undefined, "Im sorry, we dont have any cars available matching your filter criteria")
+        }   
         console.log("TAHTS ALL")
       }     
   }
@@ -349,8 +372,12 @@ function render_image(div, file_name){
 
 
 async function render_customer_bookings(customer_details, date){
-  carlist = get_customer_bookings(customer_details)
-  render_car_list_page(carlist ,date, buttontype="book")
+  carlist = await get_customer_bookings(customer_details)
+  console.log("CARLIST:", carlist)
+  div = document.getElementById("content")
+  div.innerHTML = ""
+  createElement("H2",div,undefined, "Here are your bookings "+customer_details.firstname)
+  render_car_list_page(carlist ,div, date, buttontype="cancel")
 }
 
 
@@ -385,14 +412,18 @@ function render_car_list_page(carlist,div,date, buttontype="book"){
     createElement("H2",  info, undefined, car.make.toUpperCase() + " " + car.model.toUpperCase());
     createElement("H3",  info, undefined, "Capacity: " + car.capacity + " Persons");
     if (car.date){
+      date = car.date
       createElement("H4", info, undefined, car.date)
     }
     else{
       createElement("H4", info, undefined, date)
 
     }
-    if (buttontype="book"){
-      const button = render_car_selection_button(car, info, render_email_form,date)
+    if (buttontype=="book"){
+      const button = render_car_selection_button(car, info, "Book This Car", render_email_form,date)
+    }
+    else{
+      const button = render_car_selection_button(car, info, "Cancel Booking", delete_booking, date)
     }
     //Alternates the order of the image and the text#
     if (i%2 == 0){
@@ -405,16 +436,30 @@ function render_car_list_page(carlist,div,date, buttontype="book"){
 }
 
 
-async function render_car_selection_button(instance,div, render_email_form, date){
+async function delete_booking(car, date){
+ let queries = [{"name": "carid", "value": car.id}, {"name":"date", "value": date}]
+
+  booking_to_delete = await get("/api/bookings", queries)
+  console.log("DELETE BOOKING")
+  console.log(booking_to_delete)
+  await remove("/api/bookings", booking_to_delete[0].id)
+
+  div = document.getElementById("content")
+  div.innerHTML = ""
+  createElement("H2",div, undefined, "Booking for " + car.make + " " + car.model + " on the " + date + " cancelled")
+}
+
+
+async function render_car_selection_button(instance,div, text, button_function, date){
   
-  const button = createElement("BUTTON", div, instance.id, "Book This Car")
+  const button = createElement("BUTTON", div, instance.id, text)
   button.setAttribute("class", "btn btn-primary align-middle")
   button.addEventListener('click', async function(event)
         {
           car = await get("/api/cars/"+button.id)
           if (car){
             console.log("CAR", car)
-            render_email_form(car, date)
+            button_function(car, date)
           }
           
           
@@ -437,12 +482,13 @@ function render_email_form (car_details, date)
   email.setAttribute("name", "email");
   email.setAttribute("placeholder", "Email@example.com");
   email.setAttribute("required", "true")
-
+  email.setAttribute("class", "form-control")
 
   // Create a submit button
   var s = createElement("input", form);
   s.setAttribute("type", "submit");
   s.setAttribute("value", "Submit");
+  s.setAttribute("class", "btn btn-info")
 
   console.log("PAGE UPDATED")
 
@@ -451,15 +497,15 @@ function render_email_form (car_details, date)
     event.preventDefault();
     customer_email = Object.fromEntries(new FormData(form).entries()).email
     const customer_details = await get_customer_details_from_email(customer_email);
-    if (customer_details){
+    if (customer_details == []){
       create_new_booking(car_details, customer_details, date)
       render_customer_bookings(customer_details, date)
 
 
     }
-    else{
+    else if (customer_details != []){
       console.log("rendering info")
-      render_customer_info_form(customer_email, car_details)
+      render_customer_info_form(customer_email, car_details, date)
     }
   })
 }
@@ -481,6 +527,7 @@ function render_customer_info_form(email, car_details, date){
   ID.setAttribute("name", "firstname");
   ID.setAttribute("placeholder", "firstname");
   ID.setAttribute("required", "true")
+  ID.setAttribute("class", "form-control")
   
   // Create an input element for Surname
   var ID = createElement("input", form);
@@ -488,6 +535,8 @@ function render_customer_info_form(email, car_details, date){
   ID.setAttribute("name", "surname");
   ID.setAttribute("placeholder", "surname");
   ID.setAttribute("required", "true")
+  ID.setAttribute("class", "form-control")
+
 
 
 
@@ -495,6 +544,8 @@ function render_customer_info_form(email, car_details, date){
   var s = createElement("input", form); 
   s.setAttribute("type", "submit");
   s.setAttribute("value", "Submit");
+  s.setAttribute("class", "btn btn-info")
+
 
 
 
@@ -505,7 +556,9 @@ function render_customer_info_form(email, car_details, date){
     customer_details.email = email
     customer_details = await create_new_customer(customer_details)
     if (car_details){
+        console.log("DATE TO BE DAATED:", date)
         create_new_booking(car_details, customer_details, date)
+        console.log("BookingCreated")
         render_customer_bookings(customer_details)
     }
     else{
@@ -553,8 +606,15 @@ async function get_customer_bookings(customer_details){
 function render_home_page(){
   div = document.getElementById("content")
   div.innerHTML = ""
-  p = createElement("P", div, undefined, "Welcome to our Car booking service! - Explore our range of cars available on the beautiful island of Sardinia to make the most of your one day cruise stop off")
+  p = createElement("P", div, undefined, "Welcome to our Car booking service! - Explore our range of incredible cars")
   render_car_filter()
 }
-nav_bar_functionality()
-render_customer_login()
+
+function render_login_page(){
+  div = document.getElementById("content")
+  div.innerHTML = ""
+  p = createElement("P", div, undefined, "Log in to view and manage your booking")
+  render_customer_login()
+}
+
+render_home_page()

@@ -44,7 +44,13 @@ create = function(req, resp, jsonpath, attributes){
     console.log("Attributes", attributes)
     let entities = require(jsonpath)
     id = uuidv4()
-    newEntity = {"id": id}
+    console.log(attributes)
+    if (attributes.includes("id") == false){
+        newEntity = {"id": id}
+    }
+    else{
+        newEntity ={}
+    }
     for (a in attributes){
         attribute = attributes[a]
         console.log(attribute, req.body[attribute])
@@ -108,7 +114,7 @@ remove = function(req, resp, jsonpath){
             filteredEntities.splice(index, 1)
             let entityText = JSON.stringify(filteredEntities)
             fs.writeFileSync(jsonpath, entityText)
-            resp.status(204).send(entity)
+            resp.status(204)
             sent = true
             break
         }
