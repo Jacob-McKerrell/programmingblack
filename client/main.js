@@ -23,7 +23,7 @@ async function create_new_car(car_details){
 //render_car_admin(create_new_car)
 
 
-function get(relativeURL, queries){
+async function get(relativeURL, queries){
   const url = new URL(relativeURL, window.location.href);//
   if (queries){
     for (let i =0; i < queries.length; i++)
@@ -36,7 +36,7 @@ function get(relativeURL, queries){
     }
   }
     console.log("URL:", url.href)
-    response = fetch(url.href)
+    response = await fetch(url.href)
     .then(response => response.json())
     .catch( (error) => alert("UNABLE TO CONNECT TO SERVER\n\n"+error))
     console.log("RESPONSE: ", response, url.href)
@@ -96,9 +96,15 @@ async function get_customer_details_from_email(email)
 {
   queries = [{"name": "email", "value": email}]
   const customers = await get("/api/customers", queries)
-  if (customers){
+  if (customers.length != 0){
+    console.log('here')
+    console.log(customers)
     return customers[0]
-  }   
+  }  
+  else{
+    const empty = []
+    return empty
+  } 
 }
 
 async function patch(relativeURL, entity, queries){
@@ -250,8 +256,11 @@ function render_customer_login(date){
   {
     event.preventDefault();
     customer_email = Object.fromEntries(new FormData(form).entries()).email
+    console.log("EMAIL:", customer_email)
     const customer_details = await get_customer_details_from_email(customer_email);
-    if (customer_details != []){
+    console.log("DETAILS:", customer_details)
+    if (customer_details.length != 0){
+      console.log("PLEASE DONT SEE THIS")
       customer_bookings = await get_customer_bookings(customer_details)
       console.log("BOOKINGS:", customer_bookings)
       div.innerHTML = ""
@@ -266,7 +275,7 @@ function render_customer_login(date){
         welcomestring = "Hi " + title_case(customer_details.firstname) + "It looks like you dont have any bookings - check out what cars we have on offer"
       }
     }
-    else if (customer_details == []){
+    if (customer_details.length == 0){
       console.log("USER DOESNT EXIST")
       render_customer_info_form(customer_email, date)
     }
@@ -497,13 +506,13 @@ function render_email_form (car_details, date)
     event.preventDefault();
     customer_email = Object.fromEntries(new FormData(form).entries()).email
     const customer_details = await get_customer_details_from_email(customer_email);
-    if (customer_details == []){
+    if (customer_details.length != 0){
       create_new_booking(car_details, customer_details, date)
       render_customer_bookings(customer_details, date)
 
 
     }
-    else if (customer_details != []){
+    else if (customer_details.length == 0){
       console.log("rendering info")
       render_customer_info_form(customer_email, car_details, date)
     }

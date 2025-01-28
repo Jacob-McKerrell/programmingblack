@@ -1,5 +1,6 @@
 const request = require('supertest');
 const app = require('./app');
+app.data_dir = "./test"
 
 describe('Tests for /api/cars', () => {
     test('GET /api/cars succeeds', () => {

@@ -4,7 +4,8 @@
   "main": "script.js",
   "scripts": {
     "test": "jest",
-    "start": "nodemon server.js"
+    "start": "node server.js",
+    "debug": "nodemon server.js"
   },
   "author": "Jacob McKerrell",
   "license": "ISC",
