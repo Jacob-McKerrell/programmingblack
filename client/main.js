@@ -1,4 +1,8 @@
+
+
+
 function post(entity, relativeURL){
+  /* calls post request at /api/{realtiveURL} with {entity} passed in as the body */
   console.log(relativeURL)
   url = window.location.origin + relativeURL
   const response = fetch(url,
@@ -13,17 +17,9 @@ function post(entity, relativeURL){
     .catch( (error) => alert("UNABLE TO CONNECT TO SERVER, ITEM NOT ADDED\n\n"+error))
     return response
 }
-async function create_new_car(car_details){
-  console.log("Creating Car")
-  console.log(car_details)
-  response = await post(car_details, "/api/cars")
-  console.log(response)
-
-}
-//render_car_admin(create_new_car)
-
 
 async function get(relativeURL, queries){
+  /* calls get request at /api/{realtiveURL} with {queries} passed in as queries */
   const url = new URL(relativeURL, window.location.href);//
   if (queries){
     for (let i =0; i < queries.length; i++)
@@ -45,7 +41,11 @@ async function get(relativeURL, queries){
    
 }
 
+
+
+
 function remove(relativeURL, itemID){
+  /* calls delete request at /api/{realtiveURL} with {queries} passed in as queries */
   console.log(relativeURL)
   url = window.location.origin + relativeURL + "/" + itemID
   const response = fetch(url,
@@ -59,20 +59,29 @@ function remove(relativeURL, itemID){
 
 
 
+async function create_new_car(car_details){
+  console.log("Creating Car")
+  console.log(car_details)
+  response = await post(car_details, "/api/cars")
+  console.log(response)
+
+}
+//render_car_admin(create_new_car)
+
 
 
 
 async function filter_out_unavailable_cars(car_list, date){
+
+  /* Takes a list of cars (already filtered by attributes in the form) - ({car_list}) and removes any which are already booked on a given date ({date})) */
+
   queries = [{"name":"date", "value": date}]
   bookings = await get("/api/bookings", queries)
-  
+
   booking_car_ids = []
   for (let booking of bookings){
     booking_car_ids.push(booking.carid)
   }
-  console.log("ALL BOOKINGS", bookings)
-  console.log(booking_car_ids)
-
 
   filtered_list = []
   for (let car of car_list){
@@ -80,8 +89,6 @@ async function filter_out_unavailable_cars(car_list, date){
       filtered_list.push(car)
     }
   }
-
-  console.log("LIST DO BE FILTERED:", filtered_list)
   return filtered_list
 }
 
@@ -94,6 +101,8 @@ async function filter_out_unavailable_cars(car_list, date){
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 async function get_customer_details_from_email(email)
 {
+  /* takes an email as an input ({email}) and returns the customer entity associated wit this email, or an empty list otherwise */
+
   queries = [{"name": "email", "value": email}]
   const customers = await get("/api/customers", queries)
   if (customers.length != 0){

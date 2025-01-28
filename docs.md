@@ -7,7 +7,6 @@ Which can be accessed under the `http:localhost:8080/api/{ENTITY}` URL
 ## Entity Attributes
 ### Cars
   
-  
 id - A unique randomly generated uuid for a specific car  
 make - A string detailing what company makes the car  
 model - A string detailing the exact model of the car  
@@ -57,8 +56,11 @@ date - A string detailing the date that the booking is for
 }
 ```
 
+
+
+
 ## Some examples using cars
-### A list of entities (GET)
+### A list of car entities (GET)
 
 GET /api/cars will return *all* the cars in the json file.
 
@@ -95,7 +97,7 @@ curl "http://localhost:8080/api/cars" \
   }
 ]
 ```
-### A list of entities that satisfy search criteria (GET)
+### A list of car entities that satisfy search criteria (GET)
 
 You can specify query parameters for any of the attributes, to narrow the results.
 ```sh
@@ -122,10 +124,11 @@ curl "http://localhost:8080/api/cars?make=audi&capacity=5" \
 `404 Not Found` if no entities satisfy all these criteria
 
 ### Details for a specific entity (GET)
-
+  
+  
 GET /api/cars/:id will return the car with the specified id
-
-
+  
+  
 ```sh
 curl "http://localhost:8080/api/cars/d958b359-556a-4d80-b5ca-13dcf9461306" \
   -H "Accept: application/json"
@@ -185,3 +188,7 @@ curl -X DELETE "http://localhost:8080/api/cars/bda3d38e-a9f3-4072-b4e6-12c476a99
 ```
 `201 No Content`
 or `404 Not Found` if entity does not exist
+
+
+
+All of these functions work the same for the other entities.
