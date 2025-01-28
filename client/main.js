@@ -1,6 +1,6 @@
 
-
-
+// THIS SET OF FUNCTIONS IS RESPONSIBLE for the API requests//
+//---------------------------------------------------------------------------------------------------------------------------------------------------
 function post(entity, relativeURL){
   /* calls post request at /api/{realtiveURL} with {entity} passed in as the body */
   console.log(relativeURL)
@@ -78,6 +78,7 @@ async function patch(relativeURL, entity, queries){
     });
   return response.json()
 }
+//---------------------------------------------------------------------------------------------------------------------------------------------------
 
 
 
@@ -86,11 +87,7 @@ async function patch(relativeURL, entity, queries){
 
 
 async function create_new_car(car_details){
-  console.log("Creating Car")
-  console.log(car_details)
   response = await post(car_details, "/api/cars")
-  console.log(response)
-
 }
 //render_car_admin(create_new_car)
 
@@ -151,6 +148,7 @@ function create_new_customer(customer_details, status){
 }
 
 function change_car_availability_status(car_details, status){
+  /* FUNCTION IS NOT UTILISED BUT EFFECTIVELY CALLED A PATCH REQUEST */
   const url = new URL("/api/cars/" + car_details.id, window.location.href);
   const response = fetch(url,
     {
@@ -173,61 +171,17 @@ async function create_new_booking(car_details, customer_details, date){
 }
 
 
+// UTILITY FUNCTIONS //
+
+function title_case(string){
+  return string[0].toUpperCase() + string.substring(1).toLowerCase()
+ 
+ }
 
 
-booking_buttons = document.querySelectorAll(".booking-button")
-
-for(let button of booking_buttons){
-  let clickable_parent = img.parentElement.parentElement.parentElement
-  clickable_parent.addEventListener("click", () => {
-      img.classList.remove("invisible")
-  })
-}
-
-// NOT USED ANYWHERE
-function modify_car_availability(){
-    const response = fetch(window.location.href+"/api/cars/carid?available=no",
-      {
-          method: 'POST',
-          headers: {
-              "Content-Type": "application/json"
-            },
-      });
-  }
+/// THESE SET OF FUNCTIONS ARE RESPONSIBLE FOR DISPLAYING THE HTML TO THE WEBPAGE ///
 
 
-
-
-
-
-
-/*const button = document.getElementById("my_button")
-button.addEventListener("search", async function(event){
-    console.log()
-    event.preventDefault()
-    const response = await fetch("/car/find")
-    let body = await response.text()
-    document.getElementById("carlist").innerHTML=body
-})
-const boxElem = document.querySelector(".carlist");*/
-
-function get_list_of_values(entities, attribute){
-  let values = []
-  for (i in entities){
-    entity = entities[i]
-    if (values.includes(entity[attribute]) == false){
-      values.push(entity[attribute])
-    }
-  }
-  values = values.sort()
-  return values
-  
-}
-
-
-
-
-/// RENDERING FUNCTIONS///
 function createElement(name, container, IDName, innerText) {
   var element = document.createElement(name);
   if(IDName) {
@@ -241,9 +195,6 @@ function createElement(name, container, IDName, innerText) {
   }
   return element;
 }
-
-
-
 
 
 function render_customer_login(date){
@@ -301,10 +252,7 @@ function render_customer_login(date){
 
 
 
-function title_case(string){
- return string[0].toUpperCase() + string.substring(1).toLowerCase()
 
-}
 
 
 

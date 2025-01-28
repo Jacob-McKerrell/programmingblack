@@ -43,14 +43,14 @@ describe('Tests for /api/cars', () => {
 
     test("DELETE /api/cars/d958b359-556a-4d80-b5ca-13dcf9461306", () => {
         return request(app)
-        .delete("/api/cars/DELETEME")
+        .delete("/api/cars/d958b359-556a-4d80-b5ca-13dcf9461306")
         .send()
         .expect(204);
     })
 
     test("GET /api/cars/d958b359-556a-4d80-b5ca-13dcf9461306 returns 404 (since just deleted)", () => {
         return request(app)
-        .get("/api/cars/DELETEME")
+        .get("/api/cars/d958b359-556a-4d80-b5ca-13dcf9461306")
         .expect(404)
     })
 
