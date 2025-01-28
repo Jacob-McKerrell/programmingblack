@@ -6,11 +6,14 @@ The API provides details for the following entities
 Which can be accessed under the `http:localhost:8080/api/{ENTITY}` URL
 ## Entity Attributes
 ### Cars
+  
+  
 id - A unique randomly generated uuid for a specific car  
 make - A string detailing what company makes the car  
 model - A string detailing the exact model of the car  
 capacity - An integer detailing how many people the car can hold.  
 
+  
 ```json
 {
   "id": "d958b359-556a-4d80-b5ca-13dcf9461306",
@@ -20,6 +23,14 @@ capacity - An integer detailing how many people the car can hold.
 }
 ```
 ### Customers
+  
+    
+id - A unique randomly generated uuid for a specific car  
+firstname - A string detailing the first name of the customer  
+surname - A string detailing the surname of the customer
+email - A string detailing the email address of the customer
+  
+  
 ```json
 {
     "id": "14f4d38b-7789-4917-8cec-ddc6eebe648a",
@@ -30,6 +41,13 @@ capacity - An integer detailing how many people the car can hold.
 ```
 
 ### Bookings
+  
+     
+id - A unique randomly generated uuid for a specific car  
+customerid - corresponds to the id of a customer instance  
+carid - corresponds to the id of a car instance
+date - A string detailing the date that the booking is for
+
 ```json
 {
     "id": "0e7752a7-283c-49d2-a29e-40485a8478ed",
@@ -41,6 +59,9 @@ capacity - An integer detailing how many people the car can hold.
 
 ## Some examples using cars
 ### A list of entities (GET)
+
+GET /api/cars will return *all* the cars in the json file.
+
 ```sh
 curl "http://localhost:8080/api/cars" \
   -H "Accept: application/json"
@@ -65,6 +86,12 @@ curl "http://localhost:8080/api/cars" \
     "model": "up",
     "capacity": "3",
     "available": "yes"
+  }
+  {
+    "id":"d1ee288b-bdc9-42bc-b701-3d16bfe2ced8",
+    "make":"ford",
+    "model":"fiesta",
+    "capacity":"5"
   }
 ]
 ```
@@ -92,8 +119,13 @@ curl "http://localhost:8080/api/cars?make=audi&capacity=5" \
   }
 ]
 ```
+`404 Not Found` if no entities satisfy all these criteria
 
 ### Details for a specific entity (GET)
+
+GET /api/cars/:id will return the car with the specified id
+
+
 ```sh
 curl "http://localhost:8080/api/cars/d958b359-556a-4d80-b5ca-13dcf9461306" \
   -H "Accept: application/json"
