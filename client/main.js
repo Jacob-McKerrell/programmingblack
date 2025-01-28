@@ -41,9 +41,6 @@ async function get(relativeURL, queries){
    
 }
 
-
-
-
 function remove(relativeURL, itemID){
   /* calls delete request at /api/{realtiveURL} with {queries} passed in as queries */
   console.log(relativeURL)
@@ -56,6 +53,35 @@ function remove(relativeURL, itemID){
           },
     })
 }
+
+async function patch(relativeURL, entity, queries){
+  /* calls delete request at /api/{realtiveURL} with {queries} 
+  passed in as queries and {entity} as a body*/
+  const url = new URL(relativeURL + "/" + entity.id, window.location.href);
+  if (queries){
+    for (let i =0; i < queries.length; i++)
+    {
+      param = queries[i]
+      if (param.value != "")
+        {
+          url.searchParams.append(param.name, param.value);
+        }     
+    }
+  }
+  const response = await fetch(url,
+    {
+        method: 'PATCH',
+        headers: {
+            "Content-Type": "application/json"
+          },
+        body: JSON.stringify(entity)
+    });
+  return response.json()
+}
+
+
+
+
 
 
 
@@ -101,7 +127,9 @@ async function filter_out_unavailable_cars(car_list, date){
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 async function get_customer_details_from_email(email)
 {
-  /* takes an email as an input ({email}) and returns the customer entity associated wit this email, or an empty list otherwise */
+  /* takes an email as an input ({email}) and returns
+   the customer entity associated wit this email, or an 
+   empty list otherwise */
 
   queries = [{"name": "email", "value": email}]
   const customers = await get("/api/customers", queries)
@@ -116,28 +144,7 @@ async function get_customer_details_from_email(email)
   } 
 }
 
-async function patch(relativeURL, entity, queries){
-  const url = new URL(relativeURL + "/" + entity.id, window.location.href);
-  if (queries){
-    for (let i =0; i < queries.length; i++)
-    {
-      param = queries[i]
-      if (param.value != "")
-        {
-          url.searchParams.append(param.name, param.value);
-        }     
-    }
-  }
-  const response = await fetch(url,
-    {
-        method: 'PATCH',
-        headers: {
-            "Content-Type": "application/json"
-          },
-        body: JSON.stringify(entity)
-    });
-  return response.json()
-}
+
 
 function create_new_customer(customer_details, status){
   return post(customer_details, "/api/customers")

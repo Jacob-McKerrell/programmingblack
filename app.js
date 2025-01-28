@@ -6,7 +6,7 @@ const {v4: uuidv4} =require("uuid")
 
 const app = express()
 
-
+let data_dir = "./data"
 
 app.use(express.static('client'));
 app.use(express.json())
@@ -14,7 +14,7 @@ app.use("/form", express.static("./client/form.html"))
 
 
 read = function(req, resp, jsonpath){
-    const entities = require(jsonpath)
+    const entities = require(data_dir + jsonpath)
     filteredEntities = filter_entity_list(req, entities)
     if (filteredEntities){
         resp.status(200).send(filteredEntities)
@@ -25,7 +25,7 @@ read = function(req, resp, jsonpath){
 }
 
 read_entity = function(req, resp, jsonpath){
-    const entities = require(jsonpath)
+    const entities = require(data_dir + jsonpath)
     let id = req.params.id
     sent = false
     for (i in entities){
@@ -42,7 +42,7 @@ read_entity = function(req, resp, jsonpath){
 
 create = function(req, resp, jsonpath, attributes){
     console.log("Attributes", attributes)
-    let entities = require(jsonpath)
+    let entities = require(data_dir + jsonpath)
     id = uuidv4()
     console.log(attributes)
     if (attributes.includes("id") == false){
@@ -62,7 +62,7 @@ create = function(req, resp, jsonpath, attributes){
     }
     entities.push(newEntity)
     let entityText = JSON.stringify(entities)
-    fs.writeFileSync(jsonpath, entityText)
+    fs.writeFileSync(data_dir + jsonpath, entityText)
     resp.status(200).send(newEntity)
 
 }
@@ -78,7 +78,7 @@ update = function(req, resp, jsonpath){
             ignore_list.push(param)
         }
     }
-    let allEntities = require(jsonpath)
+    let allEntities = require(data_dir + jsonpath)
     filteredCars = filter_entity_list(req, allEntities, ignore=ignore_list)
     let entity = filteredCars[0]
 
@@ -95,13 +95,13 @@ update = function(req, resp, jsonpath){
     if (allEntities.includes(entity) == false){resp.status(404)}
     allEntities.push(entity)
     let entityText = JSON.stringify(allEntities)
-    fs.writeFileSync(jsonpath, entityText)
+    fs.writeFileSync(data_dir + jsonpath, entityText)
     resp.status(200).send(entity)
 }
 
 remove = function(req, resp, jsonpath){
     id = req.params.id
-    const allEntities = require(jsonpath)
+    const allEntities = require(data_dir + jsonpath)
     filteredEntities = filter_entity_list(req, allEntities)
     console.log(filteredEntities)
     sent = false
@@ -113,8 +113,8 @@ remove = function(req, resp, jsonpath){
             index = filteredEntities.indexOf(entity)
             filteredEntities.splice(index, 1)
             let entityText = JSON.stringify(filteredEntities)
-            fs.writeFileSync(jsonpath, entityText)
-            resp.status(204)
+            fs.writeFileSync(data_dir + jsonpath, entityText)
+            resp.status(204).send()
             sent = true
             break
         }
@@ -131,70 +131,70 @@ remove = function(req, resp, jsonpath){
 //CAR ENTITY//
 app.get("/api/cars", function(req, resp){
     console.log("HEREEE CREATING NEW CAR")
-    read(req, resp, "./data/cars.json")
+    read(req, resp, "/cars.json")
 })
 
 app.get("/api/cars/:id", function(req, resp){ 
-    read_entity(req,resp, "./data/cars.json")
+    read_entity(req,resp, "/cars.json")
 })
 
 app.post("/api/cars/", function(req, resp){
     console.log(req.body, req.body["make"], req.body["model"])
     attributes = ["make", "model", "capacity", "available"]
-    create(req, resp, "./data/cars.json", attributes)
+    create(req, resp, "/cars.json", attributes)
 })
 
 app.patch("/api/cars/:id/", function(req, resp){
-    update(req, resp, "./data/cars.json")
+    update(req, resp, "/cars.json")
 })
 
 app.delete("/api/cars/:id/", function(req, resp){
-    remove(req, resp, "./data/cars.json")
+    remove(req, resp, "/cars.json")
 })
 
 
 //CUSTOMER ENTITY//
 app.get("/api/customers", function(req, resp){
-    read(req, resp, "./data/customers.json")
+    read(req, resp, "/customers.json")
 })
 
 app.get("/api/customers/:id", function(req, resp){ 
-    read_entity(req,resp, "./data/customers.json")
+    read_entity(req,resp, "/customers.json")
 })
 
 app.post("/api/customers/", function(req, resp){
     attributes = ["firstname", "surname", "email"]
-    create(req, resp, "./data/customers.json", attributes)
+    create(req, resp, "/customers.json", attributes)
 })
 
 app.patch("/api/customers/:id/", function(req, resp){
-    update(req, resp, "./data/customers.json")
+    update(req, resp, "/customers.json")
 })
 
 app.delete("/api/customers/:id/", function(req, resp){
-    remove(req, resp, "./data/customers.json")
+    remove(req, resp, "/customers.json")
 })
 //BOOKING ENTITY//
 
 app.get("/api/bookings", function(req, resp){
-    read(req, resp, "./data/bookings.json")
+    read(req, resp, "/bookings.json")
 })
 
 app.get("/api/bookings/:id", function(req, resp){ 
-    read_entity(req,resp, "./data/bookings.json")
+    read_entity(req,resp, "/bookings.json")
   })
 
 app.post("/api/bookings/", function(req, resp){
     attributes = ["customerid", "carid", "date"]
-    create(req, resp, "./data/bookings.json", attributes)
+    create(req, resp, "/bookings.json", attributes)
 })
 
 app.patch("/api/bookings/:id/", function(req, resp){
-    update(req, resp, "./data/bookings.json")
+    update(req, resp, "/bookings.json")
 })
 
 app.delete("/api/bookings/:id/", function(req, resp){
-    remove(req, resp, "./data/bookings.json")
+    remove(req, resp, "/bookings.json")
 })
 
 
@@ -279,4 +279,9 @@ const cb0 = function (req, resp, next) {
   app.get('/example/c', [cb0, cb1, cb2])
 
 
-module.exports = app;
+module.exports = {
+    app,
+    setDataDir: (dir) => {
+        data_dir = dir;
+    }
+}
