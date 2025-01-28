@@ -6,10 +6,10 @@ The API provides details for the following entities
 Which can be accessed under the `http:localhost:8080/api/{ENTITY}` URL
 ## Entity Attributes
 ### Cars
-id - A unique randomly generated uuid for a specific car
-make - A string detailing what company makes the car
-model - A string detailing the exact model of the car
-capacity - An integer detailing how many people the car can hold.
+id - A unique randomly generated uuid for a specific car  
+make - A string detailing what company makes the car  
+model - A string detailing the exact model of the car  
+capacity - An integer detailing how many people the car can hold.  
 
 ```json
 {
