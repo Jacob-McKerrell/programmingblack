@@ -40,22 +40,32 @@ describe('Tests for /api/cars', () => {
     });
 
     test('POST /api/cars succeeds', () => {
-        const params = {"id": "TESTID", "make": "test_make", "model":"test_model", "capacity":0};
-        return request(app)
+        const params = {"make": "test_make", "model":"test_model", "capacity":0};
+        const result =  request(app)
         .post('/api/cars')
         .send(params)
 	    .expect(200);
+        return result
     });
 
     test('GET /api/cars contains car just posted', () => {
-        const params = {"id": "TESTID", "make": "test_make", "model":"test_model", "capacity":0};
+        const params = {"make": "test_make", "model":"test_model", "capacity":0};
         return request(app)
         .get("/api/cars") 
         .send(params) 
 	    .expect(200);
     });
 
-    //test("DELETE /api/")
+    test("DELETE /api/cars", () => {
+        response =  request(app)
+        .get("/api/cars/d958b359-556a-4d80-b5ca-13dcf9461306") 
+	    .expect(200);
+        response = response.json()
+        console.log("PPLEASE SEEEE HEREEE:", response)
+        return request(app)
+        .delete("/api/cars")
+
+    })
 
 });
 
