@@ -23,19 +23,15 @@ saveJson = function(jsonpath, value) {
         data_dir + jsonpath, JSON.stringify(value)
     );
 }
-let CARS = require(data_dir + "/cars.json")
-let CUSTOMERS = require(data_dir + "/customers.json")
-let BOOKINGS = require(data_dir + "/bookings.json")
+const cars = require(data_dir + "/cars.json")
+const customers = require(data_dir + "/customers.json")
+const bookings = require(data_dir + "/bookings.json")
 
 
 
 
 read = function(req, resp, jsonpath){
-    link_for_entities = {"/cars.json": CARS, "/customers.json": CUSTOMERS, "/bookings.json": BOOKINGS}
-
-
-    const entities = link_for_entities[jsonpath]
-    console.log(jsonpath)
+    const entities = loadJson(jsonpath)
     filteredEntities = filter_entity_list(req, entities)
     if (filteredEntities){
         resp.status(200).send(filteredEntities)
@@ -46,9 +42,7 @@ read = function(req, resp, jsonpath){
 }
 
 read_entity = function(req, resp, jsonpath){
-    link_for_entities = {"/cars.json": CARS, "/customers.json": CUSTOMERS, "/bookings.json": BOOKINGS}
-
-    const entities = link_for_entities[jsonpath]
+    const entities = loadJson(jsonpath)
     let id = req.params.id
     sent = false
     for (i in entities){
@@ -64,9 +58,8 @@ read_entity = function(req, resp, jsonpath){
 }
 
 create = function(req, resp, jsonpath, attributes){
-    link_for_entities = {"/cars.json": CARS, "/customers.json": CUSTOMERS, "/bookings.json": BOOKINGS}
-
-    let entities = link_for_entities[jsonpath]
+    console.log("Attributes", attributes)
+    let entities = loadJson(jsonpath)
     id = uuidv4()
     console.log(attributes)
     if (attributes.includes("id") == false){
@@ -123,11 +116,7 @@ update = function(req, resp, jsonpath){
 
 remove = function(req, resp, jsonpath){
     id = req.params.id
-    link_for_entities = {"/cars.json": CARS, "/customers.json": CUSTOMERS, "/bookings.json": BOOKINGS}
-
-    let allEntities = link_for_entities[jsonpath]
-    
-
+    const allEntities = loadJson(jsonpath)
     filteredEntities = filter_entity_list(req, allEntities)
     console.log(filteredEntities)
     sent = false
@@ -140,20 +129,6 @@ remove = function(req, resp, jsonpath){
                 filteredEntities.splice(index, 1)
             }
             saveJson(jsonpath, filteredEntities);
-            
-            if (jsonpath == "/cars.json"){
-                CARS = filteredEntities
-            }
-            if(jsonpath == "/customers.json"){
-                CUSTOMERS = filteredEntities
-            }
-            if (jsonpath == "/bookings.json"){
-                BOOKINGS = filteredEntities
-            }
-
-
-
-            link_for_entities
             resp.status(204).send()
             sent = true
             break
