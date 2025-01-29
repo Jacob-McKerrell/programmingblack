@@ -196,7 +196,6 @@ function createElement(name, container, IDName, innerText) {
   return element;
 }
 
-
 function render_customer_login(date){
   console.log("CUSTOMER LOGIN")
   // Create a form dynamically
@@ -249,21 +248,7 @@ function render_customer_login(date){
   })
 }
 
-
-
-
-
-
-
-
 function render_car_filter(){
- // <form id="search-cars" method="get" class="form-group">
-   // <h3>Make</h1><input name="make" type="text" class="car-attribute form-control">
-   // Model<input name="model" type="text" class="car-attribute form-control">
-    //Capacity <input name="capacity" type="text", class="car-attribute form-control">
-    //<input name="available" value="yes", class="car-attribute invisibleinfo form-control">
- // </form>
- 
   div = document.getElementById("content")
   var form = createElement("FORM", div)
 
@@ -327,13 +312,6 @@ function render_car_filter(){
   );
 }
 
-
-
-
-
-
-
-
 function render_image(div, file_name){
   const image = createElement("IMG", div)
   image.setAttribute("src", file_name)
@@ -341,8 +319,6 @@ function render_image(div, file_name){
   image.setAttribute("class", "img-fluid")
 
 }
-
-
 
 async function render_customer_bookings(customer_details, date){
   carlist = await get_customer_bookings(customer_details)
@@ -352,19 +328,6 @@ async function render_customer_bookings(customer_details, date){
   createElement("H2",div,undefined, "Here are your bookings "+customer_details.firstname)
   render_car_list_page(carlist ,div, date, buttontype="cancel")
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 function render_car_list_page(carlist,div,date, buttontype="book"){
   console.log("HERRREEE", carlist)
@@ -408,7 +371,6 @@ function render_car_list_page(carlist,div,date, buttontype="book"){
   }    
 }
 
-
 async function delete_booking(car, date){
  let queries = [{"name": "carid", "value": car.id}, {"name":"date", "value": date}]
 
@@ -421,7 +383,6 @@ async function delete_booking(car, date){
   div.innerHTML = ""
   createElement("H2",div, undefined, "Booking for " + car.make + " " + car.model + " on the " + date + " cancelled")
 }
-
 
 async function render_car_selection_button(instance,div, text, button_function, date){
   
@@ -483,9 +444,6 @@ function render_email_form (car_details, date)
   })
 }
 
-
-
-
 function render_customer_info_form(email, car_details, date){
   div = document.getElementById("content")
   div.innerHTML = ""
@@ -544,12 +502,6 @@ function render_customer_info_form(email, car_details, date){
 
   })
 }
-
-
-function render_created_customer_message(){
-  
-}
-
 
 async function get_customer_bookings(customer_details){
   console.log("HERE MATEY", customer_details.id)
